@@ -92,6 +92,7 @@ agent.py                 # CLI entry point
 agent/
   core.py                # ReAct agent loop — orchestrates LLM + tools
   llm.py                 # LLM abstraction (Groq / Ollama)
+  guardrails.py          # Input validation — length cap + prompt injection detection
   pii.py                 # PII scrubbing + log filter — redacts sensitive patterns
   tracer.py              # Structured JSON tracing
   tools/
@@ -199,6 +200,15 @@ The last two patterns prevent API keys from appearing in logs even when a networ
 A `WARNING` log line is emitted whenever redaction occurs, providing an audit trail without storing the sensitive value.
 
 **NPI system prompt guard** — the agent's system prompt instructs it to refuse any question that appears to contain nonpublic personal information (NPI) under Gramm-Leach-Bliley: named individuals paired with account balances, transaction history, credit scores, or loan details. The refusal fires before any tool call, so NPI never reaches the search tools or traces.
+
+**Input guardrails** (`agent/guardrails.py`) — `validate()` runs before every LLM call and rejects two classes of input:
+
+| Check | Examples blocked |
+|-------|-----------------|
+| Length cap (2 000 chars) | Accidental document pastes |
+| Prompt injection | "ignore previous instructions", "you are now", "pretend to be", `[INST]`/`<<SYS>>` template tokens, "jailbreak" |
+
+On a guardrail hit the agent returns `AgentResponse(success=False)` immediately — no LLM call, no tool call, no trace written. A `WARNING` is logged with the trigger label for audit purposes.
 
 > **Note:** NPI detection is contextual and cannot be fully automated. These guardrails are a safety net — access controls and a clear usage policy (no customer data in queries) are the primary line of defense.
 
