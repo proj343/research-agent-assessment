@@ -18,7 +18,7 @@ class ToolResult:
 
 
 def with_retry(max_attempts: int = 3, backoff: float = 1.5):
-    """Retry decorator with exponential backoff for HTTP calls."""
+    """Retry decorator with exponential backoff; longer wait on 429 rate-limit errors."""
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -29,7 +29,9 @@ def with_retry(max_attempts: int = 3, backoff: float = 1.5):
                 except Exception as e:
                     last_exc = e
                     if attempt < max_attempts - 1:
-                        wait = backoff ** attempt
+                        # Rate-limit responses need a longer pause
+                        is_429 = "429" in str(e) or "Too Many Requests" in str(e)
+                        wait = 10.0 if is_429 else backoff ** attempt
                         logger.warning(f"{func.__name__} attempt {attempt+1} failed: {e}. Retrying in {wait:.1f}s")
                         time.sleep(wait)
             raise last_exc

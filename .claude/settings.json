@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); echo \"$INPUT\" >> /tmp/claude-hook-debug.json; PROMPT=$(echo \"$INPUT\" | jq -r '.prompt // .message // .user_message // .content // empty'); printf \"\\n---\\n## User (%s)\\n\\n%s\\n\" \"$(date '+%Y-%m-%d %H:%M:%S')\" \"$PROMPT\" >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md 2>/dev/null || true"
+            "command": "cat > /tmp/claude-hook-input.json; TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S'); printf \"\\n---\\n## User (%s)\\n\\n\" \"$TIMESTAMP\" >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md; jq -r '.prompt // empty' /tmp/claude-hook-input.json >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md; printf \"\\n\" >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md"
           }
         ]
       }

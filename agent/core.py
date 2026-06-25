@@ -36,11 +36,13 @@ Final Answer: [comprehensive answer that:
      explains why and what kinds of questions you CAN answer]
 
 Rules:
+- You MUST call at least one tool before giving a Final Answer on any in-scope finance/economics/research question
 - Do NOT repeat a tool call with the same query
-- For multi-source questions, use MULTIPLE tools before synthesizing
+- For multi-source questions (e.g. "explain X AND find papers on X"), use MULTIPLE tools before synthesizing
 - Maximum {max_steps} tool calls per question
-- Always cite specific sources, not just "according to Wikipedia"
+- Always cite specific sources with titles/IDs, not just "according to Wikipedia"
 - Be honest about uncertainty and gaps in your retrieved information
+- NEVER answer from memory alone for in-scope questions — always retrieve and cite sources
 """
 
 

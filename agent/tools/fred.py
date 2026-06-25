@@ -41,7 +41,8 @@ class FREDTool(BaseTool):
     )
 
     def __init__(self):
-        self.api_key = os.environ.get("FRED_API_KEY", "")
+        key = os.environ.get("FRED_API_KEY", "")
+        self.api_key = key if key and key != "your_fred_api_key_here" else ""
 
     def run(self, query: str) -> ToolResult:
         if not self.api_key:
@@ -66,28 +67,30 @@ class FREDTool(BaseTool):
 
         return self._fetch_series(series_id)
 
-    @with_retry(max_attempts=3)
     def _resolve_series(self, query: str) -> str | None:
         query_lower = query.lower()
         for keyword, sid in KNOWN_SERIES.items():
             if keyword in query_lower:
                 return sid
 
-        resp = requests.get(
-            f"{BASE_URL}/series/search",
-            params={
-                "search_text": query,
-                "api_key": self.api_key,
-                "file_type": "json",
-                "limit": 5,
-                "order_by": "popularity",
-                "sort_order": "desc",
-            },
-            timeout=TIMEOUT,
-        )
-        resp.raise_for_status()
-        seriess = resp.json().get("seriess", [])
-        return seriess[0]["id"] if seriess else None
+        try:
+            resp = requests.get(
+                f"{BASE_URL}/series/search",
+                params={
+                    "search_text": query,
+                    "api_key": self.api_key,
+                    "file_type": "json",
+                    "limit": 5,
+                    "order_by": "popularity",
+                    "sort_order": "desc",
+                },
+                timeout=TIMEOUT,
+            )
+            resp.raise_for_status()
+            seriess = resp.json().get("seriess", [])
+            return seriess[0]["id"] if seriess else None
+        except Exception:
+            return None
 
     @with_retry(max_attempts=3)
     def _fetch_series(self, series_id: str) -> ToolResult:

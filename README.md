@@ -2,6 +2,8 @@
 
 A multi-tool research agent for banking and finance questions. Given a natural language question, the agent plans which tools to call, executes searches across Wikipedia, arXiv, and FRED, and synthesizes a cited answer.
 
+> **Free to run** — the only required credential is a [Groq API key](https://console.groq.com) (no credit card, instant signup). Wikipedia and arXiv need no key at all; FRED is optional and has its own free key.
+
 ## Quick Start
 
 ```bash
