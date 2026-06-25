@@ -1,0 +1,96 @@
+{
+  "question": "What is the history and purpose of the FDIC?",
+  "timestamp": "2026-06-25T16:20:17.121719",
+  "success": true,
+  "total_duration_ms": 9626,
+  "tools_used": [
+    "wikipedia_search",
+    "arxiv_search"
+  ],
+  "num_steps": 3,
+  "sources": [
+    {
+      "title": "Federal Deposit Insurance Corporation",
+      "url": "https://en.wikipedia.org/wiki/Federal_Deposit_Insurance_Corporation",
+      "type": "wikipedia"
+    },
+    {
+      "title": "Federal Deposit Insurance Corporation Improvement Act of 1991",
+      "url": "https://en.wikipedia.org/wiki/Federal_Deposit_Insurance_Corporation_Improvement_Act_of_1991",
+      "type": "wikipedia"
+    },
+    {
+      "title": "Funding advantage and market discipline in the Canadian banking sector",
+      "authors": [
+        "Mehdi Beyhaghi",
+        "Chris D'Souza",
+        "Gordon S. Roberts"
+      ],
+      "url": "http://arxiv.org/abs/2507.12620v1",
+      "published": "2025-07-16",
+      "type": "arxiv"
+    },
+    {
+      "title": "On the history of the isomorphism problem of dynamical systems with special regard to von Neumann's contribution",
+      "authors": [
+        "Miklos Redei",
+        "Charlotte Werndl"
+      ],
+      "url": "http://arxiv.org/abs/1110.0625v1",
+      "published": "2011-10-04",
+      "type": "arxiv"
+    },
+    {
+      "title": "M-Banking Security - a futuristic improved security approach",
+      "authors": [
+        "Geeta S. Navale",
+        "Swati S. Joshi",
+        "Aaradhana A. Deshmukh"
+      ],
+      "url": "http://arxiv.org/abs/1002.1174v1",
+      "published": "2010-02-05",
+      "type": "arxiv"
+    },
+    {
+      "title": "IT Enabling Factors in a new Industry Design: Open Banking and Digital Economy",
+      "authors": [
+        "Carlos Alberto Durigan Junior",
+        "Kumiko Oshio Kissimoto",
+        "Fernando Jose Barbin Laurindo"
+      ],
+      "url": "http://arxiv.org/abs/2407.09487v1",
+      "published": "2024-05-17",
+      "type": "arxiv"
+    }
+  ],
+  "answer": "The Federal Deposit Insurance Corporation (FDIC) is a United States government corporation that provides deposit insurance to depositors in American commercial banks and savings banks. The FDIC was created by the Banking Act of 1933, during the Great Depression, to restore trust in the American banking system. Prior to its creation, more than one-third of banks had failed, and bank runs were common. The initial insurance limit was $2,500 per ownership category, which has been increased several times over the years. Since the enactment of the Dodd\u2013Frank Wall Street Reform and Consumer Protection Act in 2010, the FDIC insures deposits in member banks up to $250,000 per ownership category. The FDIC insurance is backed by the full faith and credit of the government of the United States, and since its inception in 1933, no depositor has ever lost a penny of FDIC-insured funds.\n\nThe FDIC's purpose is to maintain stability and public confidence in the U.S. financial system by insuring deposits, regulating and supervising banks, and resolving failed banks. The Federal Deposit Insurance Corporation Improvement Act of 1991 strengthened the FDIC's powers, particularly during the savings and loan crisis in the United States.\n\n[Wikipedia: Federal Deposit Insurance Corporation]",
+  "steps": [
+    {
+      "step": 1,
+      "thought": "To provide a comprehensive answer about the history and purpose of the FDIC, I should first search for information on Wikipedia, as it is likely to have a detailed and reliable overview of the topic.",
+      "action": "wikipedia_search",
+      "action_input": "Federal Deposit Insurance Corporation (FDIC) history and purpose",
+      "observation_length": 1241,
+      "observation_preview": "### Federal Deposit Insurance Corporation\n\nThe Federal Deposit Insurance Corporation (FDIC) is a United States government corporation supplying deposit insurance to depositors in American commercial banks and savings banks. The FDIC was created by the Banking Act of 1933, enacted during the Great Depression to restore trust in the American banking system. More than one-third of banks failed in the years before the FDIC's creation, and bank runs were common. The insurance limit was initially US$2,500 per ownership category, and this has been increased several times over the years. Since the ena...",
+      "duration_ms": 6903
+    },
+    {
+      "step": 2,
+      "thought": "The information from Wikipedia provides a good overview of the FDIC's history and purpose. However, to ensure comprehensiveness and potentially gather more detailed information, I should check if there are any relevant academic papers or research on the FDIC's impact or history.",
+      "action": "arxiv_search",
+      "action_input": "FDIC history and impact on banking stability",
+      "observation_length": 4127,
+      "observation_preview": "### Funding advantage and market discipline in the Canadian banking sector\n**Authors**: Mehdi Beyhaghi, Chris D'Souza, Gordon S. Roberts  \n**Published**: 2025-07-16  \n**URL**: http://arxiv.org/abs/2507.12620v1\n\nWe employ a comprehensive data set and a variety of methods to provide evidence on the magnitude of large banks' funding advantage in Canada in addition to the extent to which market discipline exists across different securities issued by the Canadian banks. The banking sector in Canada provides a unique setting in which to examine market discipline along with the prospects of proposed ...",
+      "duration_ms": 1368
+    },
+    {
+      "step": 3,
+      "thought": "The search results from arXiv do not provide relevant information about the FDIC's history and purpose. The papers seem to be unrelated to the topic. I will now proceed to provide a",
+      "action": "",
+      "action_input": "",
+      "observation_length": 0,
+      "observation_preview": "",
+      "duration_ms": 0
+    }
+  ]
+}

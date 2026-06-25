@@ -9,23 +9,21 @@ Usage:
     python eval/benchmark.py --ids 1,2,3   # run specific questions only
 """
 
+import argparse
 import json
 import sys
-import argparse
-import logging
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
-load_dotenv()
 
+from agent.core import ResearchAgent
 from agent.llm import create_llm
-from agent.tools.wikipedia import WikipediaTool
 from agent.tools.arxiv import ArxivTool
 from agent.tools.fred import FREDTool
-from agent.core import ResearchAgent
+from agent.tools.wikipedia import WikipediaTool
 from agent.tracer import Tracer
 
 
@@ -45,9 +43,18 @@ def score_response(answer: str, tools_used: list[str], criteria: dict) -> dict:
     # Refusal accuracy
     should_refuse = criteria.get("should_refuse", False)
     refusal_markers = [
-        "out of scope", "cannot", "not relevant", "not designed", "outside",
-        "doesn't fall", "speculative", "caveat", "unable to find", "not about finance",
-        "outside my scope", "not a research question"
+        "out of scope",
+        "cannot",
+        "not relevant",
+        "not designed",
+        "outside",
+        "doesn't fall",
+        "speculative",
+        "caveat",
+        "unable to find",
+        "not about finance",
+        "outside my scope",
+        "not a research question",
     ]
     did_refuse = any(m in answer_lower for m in refusal_markers)
     if should_refuse:
@@ -62,12 +69,7 @@ def score_response(answer: str, tools_used: list[str], criteria: dict) -> dict:
         tool_score = 1.0
 
     # Weighted final score
-    score = (
-        term_coverage * 0.40
-        + citation_score * 0.25
-        + refusal_score * 0.25
-        + tool_score * 0.10
-    )
+    score = term_coverage * 0.40 + citation_score * 0.25 + refusal_score * 0.25 + tool_score * 0.10
 
     return {
         "score": round(score, 3),
@@ -88,6 +90,7 @@ def run_benchmark(
     verbose: bool = False,
     model: str | None = None,
 ) -> tuple[list[dict], float]:
+    load_dotenv()
     questions_path = questions_file or Path(__file__).parent / "questions.json"
     with open(questions_path) as f:
         benchmark = json.load(f)
@@ -115,7 +118,9 @@ def run_benchmark(
 
         try:
             response = agent.run(q["question"])
-            eval_result = score_response(response.answer, response.tools_used, q.get("criteria", {}))
+            eval_result = score_response(
+                response.answer, response.tools_used, q.get("criteria", {})
+            )
 
             if verbose:
                 print(f"  Answer preview: {response.answer[:150]}...")
@@ -137,7 +142,7 @@ def run_benchmark(
                 f"Cited: {'Y' if eval_result['has_citation'] else 'N'} | "
                 f"Refusal: {'ok' if eval_result['refusal_correct'] else 'WRONG'} | "
                 f"Tools: {', '.join(response.tools_used) or 'none'} | "
-                f"{len(response.steps)} steps {response.total_duration_ms/1000:.0f}s"
+                f"{len(response.steps)} steps {response.total_duration_ms / 1000:.0f}s"
             )
 
         except Exception as e:
@@ -155,7 +160,7 @@ def run_benchmark(
     avg = total_score / len(questions) if questions else 0.0
 
     print(f"\n{'=' * 70}")
-    print(f"Benchmark Complete")
+    print("Benchmark Complete")
     print(f"Average score  : {avg:.3f} / 1.000")
     print(f"Questions run  : {len(results)}")
 
@@ -166,7 +171,7 @@ def run_benchmark(
         by_type.setdefault(t, []).append(r["eval"]["score"])
     print("\nBy question type:")
     for qtype, scores in sorted(by_type.items()):
-        print(f"  {qtype:<30} avg={sum(scores)/len(scores):.3f}  (n={len(scores)})")
+        print(f"  {qtype:<30} avg={sum(scores) / len(scores):.3f}  (n={len(scores)})")
     print(f"{'=' * 70}\n")
 
     out_path = output_file or "traces/benchmark_results.json"
@@ -192,7 +197,11 @@ def main():
     parser.add_argument("--questions", default=None, help="Path to questions JSON")
     parser.add_argument("--output", default=None, help="Path for results JSON")
     parser.add_argument("--ids", default=None, help="Comma-separated question IDs to run")
-    parser.add_argument("--model", default=None, help="Override LLM model (e.g. meta-llama/llama-4-scout-17b-16e-instruct)")
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Override LLM model (e.g. meta-llama/llama-4-scout-17b-16e-instruct)",
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 

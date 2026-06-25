@@ -8,19 +8,17 @@ Usage:
     python agent.py "Current US unemployment rate" --verbose
 """
 
-import sys
 import argparse
 import logging
-from pathlib import Path
+import sys
+
 from dotenv import load_dotenv
 
-load_dotenv()
-
+from agent.core import ResearchAgent
 from agent.llm import create_llm
-from agent.tools.wikipedia import WikipediaTool
 from agent.tools.arxiv import ArxivTool
 from agent.tools.fred import FREDTool
-from agent.core import ResearchAgent
+from agent.tools.wikipedia import WikipediaTool
 from agent.tracer import Tracer
 
 
@@ -74,6 +72,7 @@ def print_response(response, verbose: bool) -> None:
 
 
 def main() -> None:
+    load_dotenv()
     parser = argparse.ArgumentParser(
         description="Research Agent — answers finance/banking questions using Wikipedia, arXiv, and FRED.",
         formatter_class=argparse.RawDescriptionHelpFormatter,

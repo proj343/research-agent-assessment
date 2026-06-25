@@ -1,10 +1,9 @@
 """ReAct agent core — Reason + Act loop with multi-step planning."""
 
+import logging
 import re
 import time
-import logging
 from dataclasses import dataclass, field
-from typing import Optional
 
 from .tools.base import BaseTool, ToolResult
 from .tracer import Tracer
@@ -70,7 +69,7 @@ class AgentResponse:
 class ResearchAgent:
     MAX_STEPS = 8
 
-    def __init__(self, tools: list[BaseTool], llm, tracer: Optional[Tracer] = None):
+    def __init__(self, tools: list[BaseTool], llm, tracer: Tracer | None = None):
         self.tools = {t.name: t for t in tools}
         self.llm = llm
         self.tracer = tracer
@@ -83,8 +82,7 @@ class ResearchAgent:
         tools_used: list[str] = []
 
         tool_descriptions = "\n".join(
-            f"  - {name}: {tool.description}"
-            for name, tool in self.tools.items()
+            f"  - {name}: {tool.description}" for name, tool in self.tools.items()
         )
         system = SYSTEM_PROMPT.format(
             tool_descriptions=tool_descriptions,
@@ -103,7 +101,7 @@ class ResearchAgent:
             },
         ]
 
-        final_answer: Optional[str] = None
+        final_answer: str | None = None
 
         for step_num in range(1, self.MAX_STEPS + 1):
             step_start = time.time()
@@ -151,33 +149,39 @@ class ResearchAgent:
                 steps.append(step)
 
                 messages.append({"role": "assistant", "content": response_text})
-                messages.append({
-                    "role": "user",
-                    "content": (
-                        f"Observation: {observation[:3000]}\n\n"
-                        "Continue. If you have enough information, write your Final Answer. "
-                        "Otherwise, continue with another Thought/Action/Action Input."
-                    ),
-                })
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Observation: {observation[:3000]}\n\n"
+                            "Continue. If you have enough information, write your Final Answer. "
+                            "Otherwise, continue with another Thought/Action/Action Input."
+                        ),
+                    }
+                )
 
             else:
                 # Malformed output — nudge back on track
                 messages.append({"role": "assistant", "content": response_text})
-                messages.append({
-                    "role": "user",
-                    "content": (
-                        "Please use the exact format:\n"
-                        "Thought: ...\nAction: ...\nAction Input: ...\n\n"
-                        "OR if ready:\nThought: ...\nFinal Answer: ..."
-                    ),
-                })
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            "Please use the exact format:\n"
+                            "Thought: ...\nAction: ...\nAction Input: ...\n\n"
+                            "OR if ready:\nThought: ...\nFinal Answer: ..."
+                        ),
+                    }
+                )
 
         if final_answer is None:
             # Force synthesis after max steps
-            messages.append({
-                "role": "user",
-                "content": "You've reached the step limit. Provide your Final Answer now based on everything gathered.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": "You've reached the step limit. Provide your Final Answer now based on everything gathered.",
+                }
+            )
             response_text = self.llm.complete(messages, temperature=0.1, max_tokens=2048)
             parsed = self._parse(response_text)
             final_answer = parsed.get("answer") or response_text
@@ -208,7 +212,9 @@ class ResearchAgent:
         # Final Answer takes priority
         final_m = re.search(r"Final Answer\s*:\s*(.+)", text, re.DOTALL | re.IGNORECASE)
         if final_m:
-            thought_m = re.search(r"Thought\s*:\s*(.+?)(?=Final Answer)", text, re.DOTALL | re.IGNORECASE)
+            thought_m = re.search(
+                r"Thought\s*:\s*(.+?)(?=Final Answer)", text, re.DOTALL | re.IGNORECASE
+            )
             return {
                 "type": "final",
                 "thought": thought_m.group(1).strip() if thought_m else "",
@@ -216,8 +222,12 @@ class ResearchAgent:
             }
 
         action_m = re.search(r"Action\s*:\s*(\S+)", text, re.IGNORECASE)
-        input_m = re.search(r"Action Input\s*:\s*(.+?)(?=\nObservation\s*:|$)", text, re.DOTALL | re.IGNORECASE)
-        thought_m = re.search(r"Thought\s*:\s*(.+?)(?=Action\s*:|$)", text, re.DOTALL | re.IGNORECASE)
+        input_m = re.search(
+            r"Action Input\s*:\s*(.+?)(?=\nObservation\s*:|$)", text, re.DOTALL | re.IGNORECASE
+        )
+        thought_m = re.search(
+            r"Thought\s*:\s*(.+?)(?=Action\s*:|$)", text, re.DOTALL | re.IGNORECASE
+        )
 
         if action_m and input_m:
             return {

@@ -1,7 +1,9 @@
 """FRED tool — retrieves Federal Reserve economic data series."""
 
 import os
+
 import requests
+
 from .base import BaseTool, ToolResult, with_retry
 
 BASE_URL = "https://api.stlouisfed.org/fred"
@@ -100,7 +102,9 @@ class FREDTool(BaseTool):
                 params={"series_id": series_id, "api_key": self.api_key, "file_type": "json"},
                 timeout=TIMEOUT,
             )
-            series_info = info_resp.json().get("seriess", [{}])[0] if info_resp.status_code == 200 else {}
+            series_info = (
+                info_resp.json().get("seriess", [{}])[0] if info_resp.status_code == 200 else {}
+            )
             series_name = series_info.get("title", series_id)
             units = series_info.get("units_short", "")
             frequency = series_info.get("frequency_short", "")
@@ -117,7 +121,9 @@ class FREDTool(BaseTool):
                 timeout=TIMEOUT,
             )
             obs_resp.raise_for_status()
-            observations = [o for o in obs_resp.json().get("observations", []) if o["value"] != "."][:13]
+            observations = [
+                o for o in obs_resp.json().get("observations", []) if o["value"] != "."
+            ][:13]
 
             if not observations:
                 return ToolResult(
@@ -151,11 +157,13 @@ class FREDTool(BaseTool):
 
             return ToolResult(
                 content=content,
-                sources=[{
-                    "title": f"{series_name} ({series_id})",
-                    "url": f"https://fred.stlouisfed.org/series/{series_id}",
-                    "type": "fred",
-                }],
+                sources=[
+                    {
+                        "title": f"{series_name} ({series_id})",
+                        "url": f"https://fred.stlouisfed.org/series/{series_id}",
+                        "type": "fred",
+                    }
+                ],
                 success=True,
             )
 

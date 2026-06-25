@@ -1,6 +1,7 @@
 """Wikipedia tool — searches and retrieves article summaries."""
 
 import requests
+
 from .base import BaseTool, ToolResult, with_retry
 
 HEADERS = {"User-Agent": "ResearchAgent/1.0 (research-agent-assessment; contact@example.com)"}
@@ -33,11 +34,13 @@ class WikipediaTool(BaseTool):
                 summary = self._get_summary(title)
                 if summary:
                     content_parts.append(summary["text"])
-                    sources.append({
-                        "title": title,
-                        "url": summary["url"],
-                        "type": "wikipedia",
-                    })
+                    sources.append(
+                        {
+                            "title": title,
+                            "url": summary["url"],
+                            "type": "wikipedia",
+                        }
+                    )
 
             if not content_parts:
                 return ToolResult(
@@ -87,5 +90,9 @@ class WikipediaTool(BaseTool):
             return None
         data = resp.json()
         extract = data.get("extract", "")[:2500]
-        url = data.get("content_urls", {}).get("desktop", {}).get("page", f"https://en.wikipedia.org/wiki/{encoded}")
+        url = (
+            data.get("content_urls", {})
+            .get("desktop", {})
+            .get("page", f"https://en.wikipedia.org/wiki/{encoded}")
+        )
         return {"text": f"### {title}\n\n{extract}", "url": url}

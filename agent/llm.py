@@ -1,7 +1,7 @@
 """LLM abstraction — supports Groq (free cloud) and Ollama (local)."""
 
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 
 class BaseLLM(ABC):
     @abstractmethod
-    def complete(self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096) -> str:
+    def complete(
+        self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096
+    ) -> str:
         pass
 
 
@@ -25,7 +27,9 @@ class GroqLLM(BaseLLM):
         self.model = model
         logger.info(f"GroqLLM initialized: model={model}")
 
-    def complete(self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096) -> str:
+    def complete(
+        self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096
+    ) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
@@ -40,12 +44,15 @@ class OllamaLLM(BaseLLM):
 
     def __init__(self, model: str = "llama3.2:3b", base_url: str | None = None):
         import requests as _requests
+
         self._requests = _requests
         self.model = model
         self.base_url = base_url or os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
         logger.info(f"OllamaLLM initialized: model={model}, base_url={self.base_url}")
 
-    def complete(self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096) -> str:
+    def complete(
+        self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096
+    ) -> str:
         resp = self._requests.post(
             f"{self.base_url}/api/chat",
             json={

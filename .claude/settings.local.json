@@ -18,7 +18,12 @@
       "Bash(git rm *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(LLM_MODEL=meta-llama/llama-4-scout-17b-16e-instruct python3 *)"
+      "Bash(LLM_MODEL=meta-llama/llama-4-scout-17b-16e-instruct python3 *)",
+      "Bash(uv --version)",
+      "Bash(pre-commit --version)",
+      "Bash(uv sync *)",
+      "Bash(uv run *)",
+      "Bash(git commit *)"
     ]
   }
 }

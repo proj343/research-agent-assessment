@@ -1,0 +1,130 @@
+{
+  "question": "What are the implications of quantum computing for banking encryption?",
+  "timestamp": "2026-06-25T16:20:07.494034",
+  "success": true,
+  "total_duration_ms": 16951,
+  "tools_used": [
+    "wikipedia_search",
+    "arxiv_search",
+    "fred_search"
+  ],
+  "num_steps": 5,
+  "sources": [
+    {
+      "title": "Funding advantage and market discipline in the Canadian banking sector",
+      "authors": [
+        "Mehdi Beyhaghi",
+        "Chris D'Souza",
+        "Gordon S. Roberts"
+      ],
+      "url": "http://arxiv.org/abs/2507.12620v1",
+      "published": "2025-07-16",
+      "type": "arxiv"
+    },
+    {
+      "title": "Quantum Computing: Vision and Challenges",
+      "authors": [
+        "Sukhpal Singh Gill",
+        "Oktay Cetinkaya",
+        "Stefano Marrone",
+        "Daniel Claudino",
+        "David Haunschild",
+        "Leon Schlote",
+        "Huaming Wu",
+        "Carlo Ottaviani",
+        "Xiaoyuan Liu",
+        "Sree Pragna Machupalli",
+        "Kamalpreet Kaur",
+        "Priyansh Arora",
+        "Ji Liu",
+        "Ahmed Farouk",
+        "Houbing Herbert Song",
+        "Steve Uhlig",
+        "Kotagiri Ramamohanarao"
+      ],
+      "url": "http://arxiv.org/abs/2403.02240v5",
+      "published": "2024-03-04",
+      "type": "arxiv"
+    },
+    {
+      "title": "Tierkreis: A Dataflow Framework for Hybrid Quantum-Classical Computing",
+      "authors": [
+        "Seyon Sivarajah",
+        "Lukas Heidemann",
+        "Alan Lawrence",
+        "Ross Duncan"
+      ],
+      "url": "http://arxiv.org/abs/2211.02350v1",
+      "published": "2022-11-04",
+      "type": "arxiv"
+    },
+    {
+      "title": "Permutational-key quantum homomorphic encryption with homomorphic quantum error-correction",
+      "authors": [
+        "Yingkai Ouyang",
+        "Peter P. Rohde"
+      ],
+      "url": "http://arxiv.org/abs/2204.10471v2",
+      "published": "2022-04-22",
+      "type": "arxiv"
+    },
+    {
+      "title": "Post-quantum cryptography",
+      "url": "https://en.wikipedia.org/wiki/Post-quantum_cryptography",
+      "type": "wikipedia"
+    },
+    {
+      "title": "Quantum cryptography",
+      "url": "https://en.wikipedia.org/wiki/Quantum_cryptography",
+      "type": "wikipedia"
+    }
+  ],
+  "answer": "The implications of quantum computing for banking encryption are significant, as current public-key algorithms used in banking and other sectors could be vulnerable to attacks by sufficiently powerful quantum computers. These algorithms rely on the difficulty of mathematical problems such as integer factorization, discrete logarithm, or elliptic-curve discrete logarithm, which could be easily solved by a quantum computer running Shor's algorithm or similar methods.\n\nTo address this threat, the development of post-quantum cryptography (PQC), also known as quantum-proof, quantum-safe, or quantum-resistant cryptography, is underway. PQC involves creating cryptographic algorithms that are thought to be secure against quantum computer attacks. This includes exploring alternative encryption methods that are less susceptible to quantum computing threats.\n\nThe banking sector, which heavily relies on secure encryption for transactions and data protection, will need to adopt these new cryptographic standards to maintain security in a post-quantum world. This transition involves significant research, development, and implementation efforts to ensure that financial systems remain secure against emerging quantum computing threats.\n\nSources:\n[Wikipedia: Post-quantum cryptography]",
+  "steps": [
+    {
+      "step": 1,
+      "thought": "To address the implications of quantum computing for banking encryption, I need to understand the current state of quantum computing, its potential to break current encryption methods, and how the banking sector is preparing for or responding to this challenge. I'll start by searching for an overview of quantum computing's impact on encryption.",
+      "action": "wikipedia_search",
+      "action_input": "quantum computing implications for banking encryption",
+      "observation_length": 214,
+      "observation_preview": "Wikipedia search failed: 429 Client Error: Too Many Requests for url: https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=quantum+computing+implications+for+banking+encryption&srlimit=3&format=json",
+      "duration_ms": 5329
+    },
+    {
+      "step": 2,
+      "thought": "Since the Wikipedia search failed due to too many requests, I'll try another approach by searching for relevant academic papers on arXiv that discuss the implications of quantum computing for banking encryption.",
+      "action": "arxiv_search",
+      "action_input": "quantum computing implications for banking encryption",
+      "observation_length": 3981,
+      "observation_preview": "### Funding advantage and market discipline in the Canadian banking sector\n**Authors**: Mehdi Beyhaghi, Chris D'Souza, Gordon S. Roberts  \n**Published**: 2025-07-16  \n**URL**: http://arxiv.org/abs/2507.12620v1\n\nWe employ a comprehensive data set and a variety of methods to provide evidence on the magnitude of large banks' funding advantage in Canada in addition to the extent to which market discipline exists across different securities issued by the Canadian banks. The banking sector in Canada provides a unique setting in which to examine market discipline along with the prospects of proposed ...",
+      "duration_ms": 1478
+    },
+    {
+      "step": 3,
+      "thought": "The search results don't provide a direct answer to the implications of quantum computing for banking encryption. However, the second result, \"Quantum Computing: Vision and Challenges,\" mentions banking as one of the areas that can benefit from quantum computing. I need to find more specific information about the impact on encryption. I'll try searching for \"quantum computing threat to banking encryption\" on FRED to see if there are any relevant economic indicators or discussions.",
+      "action": "fred_search",
+      "action_input": "quantum computing threat to banking encryption",
+      "observation_length": 72,
+      "observation_preview": "No FRED series found for: quantum computing threat to banking encryption",
+      "duration_ms": 1150
+    },
+    {
+      "step": 4,
+      "thought": "Since the FRED search did not yield any relevant results, I'll try another approach by searching for a Wikipedia article on \"Post-quantum cryptography\" which might provide insights into how encryption methods are being developed to counter the potential threats posed by quantum computing.",
+      "action": "wikipedia_search",
+      "action_input": "Post-quantum cryptography",
+      "observation_length": 1147,
+      "observation_preview": "### Post-quantum cryptography\n\nPost-quantum cryptography (PQC), sometimes referred to as quantum-proof, quantum-safe, or quantum-resistant, is the development of cryptographic algorithms that are currently thought, but not proven, to be secure against a cryptanalytic attack by a quantum computer. Most widely used public-key algorithms rely on the difficulty of one of three mathematical problems: the integer factorization problem, the discrete logarithm problem, or the elliptic-curve discrete logarithm problem. All of these problems could be easily solved on a sufficiently powerful quantum comp...",
+      "duration_ms": 2442
+    },
+    {
+      "step": 5,
+      "thought": "The Wikipedia article on Post-quantum cryptography provides relevant information about the implications of quantum computing for banking encryption. It explains that current public-key algorithms could be vulnerable to attacks by sufficiently powerful quantum computers. I'll summarize this information and provide it as the",
+      "action": "",
+      "action_input": "",
+      "observation_length": 0,
+      "observation_preview": "",
+      "duration_ms": 0
+    }
+  ]
+}

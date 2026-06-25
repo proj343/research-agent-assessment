@@ -1,0 +1,34 @@
+[project]
+name = "research-agent-assessment"
+version = "0.1.0"
+description = "Multi-tool research agent for banking and finance questions"
+requires-python = ">=3.11"
+dependencies = [
+    "groq>=0.4.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+research-agent = "agent:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=3.0.0",
+    "ruff>=0.9.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.lint.isort]
+known-first-party = ["agent", "eval"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
