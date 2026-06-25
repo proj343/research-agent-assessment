@@ -114,6 +114,22 @@ class TestAgentRunHappyPath:
         response = agent.run("test")
         assert response is not None
 
+    def test_tool_error_field_does_not_stop_run(self):
+        """Covers core.py line 142 — logger.warning fires when result.error is set,
+        but the run still completes normally using result.content as the observation."""
+        tool = _make_tool()
+        tool.run.return_value = ToolResult(
+            content="Partial content despite upstream warning",
+            sources=[],
+            success=True,
+            error="rate limit warning from upstream",
+        )
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="q"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        response = agent.run("test")
+        assert response.success is True
+        assert response.answer == "The answer is 42."
+
 
 # ---------------------------------------------------------------------------
 # ResearchAgent.run — error / edge paths

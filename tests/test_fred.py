@@ -291,3 +291,22 @@ class TestFREDFetchSeries:
 
         assert result.success is False
         assert result.error != ""
+
+    def test_non_numeric_observation_values_skip_year_over_year(self):
+        """Covers fred.py lines 148-149 — ValueError in float() silently skipped."""
+        obs_non_numeric = {
+            "observations": [
+                {"date": f"2024-{12 - i:02d}-01", "value": "N/A" if i == 0 else str(4.0 + i * 0.1)}
+                for i in range(12)
+            ]
+        }
+        with patch("agent.tools.fred.requests.get") as mock_get:
+            mock_get.side_effect = [
+                _mock_response(SERIES_INFO_RESP),
+                _mock_response(obs_non_numeric),
+            ]
+            result = self.tool._fetch_series("UNRATE")
+
+        # Run completes without raising; year-over-year block is skipped
+        assert result.success is True
+        assert "Change over past year" not in result.content

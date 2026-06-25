@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "printf \"\\n---\\n## Assistant turn ended (%s)\\n\" \"$(date '+%Y-%m-%d %H:%M:%S')\" >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md 2>/dev/null || true"
+            "command": "/Users/julia/Documents/research_agent_framework_assessment/.claude/log-assistant.sh"
           }
         ]
       }
