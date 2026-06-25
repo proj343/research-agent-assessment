@@ -9,3 +9,10 @@ dist/
 build/
 .venv/
 venv/
+.coverage
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfplan

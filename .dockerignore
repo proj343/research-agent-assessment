@@ -1,0 +1,15 @@
+.env
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+tests/
+traces/
+outputs/
+terraform/
+.pre-commit-config.yaml
+prompt-log.md
+README.md
+agent.py
+eval/
