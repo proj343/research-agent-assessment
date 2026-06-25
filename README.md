@@ -92,7 +92,7 @@ agent.py                 # CLI entry point
 agent/
   core.py                # ReAct agent loop — orchestrates LLM + tools
   llm.py                 # LLM abstraction (Groq / Ollama)
-  pii.py                 # PII scrubbing — redacts sensitive patterns before LLM/traces
+  pii.py                 # PII scrubbing + log filter — redacts sensitive patterns
   tracer.py              # Structured JSON tracing
   tools/
     base.py              # BaseTool interface + retry decorator
@@ -102,6 +102,7 @@ agent/
 eval/
   benchmark.py           # Evaluation harness
   questions.json         # 15 benchmark questions with scoring criteria
+logs/                    # Rotating log file (agent.log, up to 5 MB × 3 backups)
 traces/                  # Auto-generated per-run JSON traces
 ```
 
@@ -125,10 +126,17 @@ Adding a new tool is a 3-step plug-in operation:
 2. Add an instance to the `tools` list in `agent.py`
 3. No other changes needed — the agent learns available tools from their `name` and `description`
 
+### Session Memory & Caching
+
+`ResearchAgent` persists state across multiple `.run()` calls within the same process:
+
+- **Conversation history**: the last 3 Q&A pairs are prepended as context to each new question, enabling natural follow-up questions ("what about the European equivalent?"). Call `agent.clear_history()` to start a fresh session.
+- **Tool result cache**: successful tool calls are cached in-memory keyed by `(tool, query)`. A repeated query within or across turns skips the network call entirely. Call `agent.clear_cache()` to force fresh fetches.
+
 ### Multi-Step Reasoning (Tier 2)
 
-The agent maintains state across steps:
-- **Deduplication**: tracks `(tool, query)` pairs; skips redundant calls
+The agent maintains state across steps within a single run:
+- **Deduplication**: tracks `(tool, query)` pairs; skips redundant calls within a run (the cache extends this across runs)
 - **Context accumulation**: each observation is fed back into the conversation, so the LLM reasons over all prior findings when deciding the next action
 - **Max steps**: configurable ceiling (default: 8) with forced synthesis if reached
 
@@ -140,7 +148,13 @@ Question 6 (yield curve inversions + academic papers): The agent first searches 
 
 ### Observability (Tier 2)
 
-Every run produces a structured JSON trace in `traces/`:
+**Logs** are written to two sinks simultaneously:
+- `logs/agent.log` — always DEBUG and above; rotates at 5 MB, keeps 3 backups
+- stderr — WARNING and above by default; DEBUG with `--verbose`
+
+Both sinks pass through `ScrubFilter` (see Privacy below) before anything is written.
+
+**Traces** — every run also produces a structured JSON trace in `traces/`:
 
 ```json
 {
@@ -168,7 +182,7 @@ A reviewer can open any trace file and understand exactly why the agent made eac
 
 This system is intended for **public financial research only**. Two layers protect against sensitive data leakage:
 
-**PII scrubbing** (`agent/pii.py`) — applied to every question before it reaches the LLM or is written to trace files. Redacts structural patterns with placeholder tags:
+**PII scrubbing** (`agent/pii.py`) — applied at two points: to every question before it reaches the LLM or trace files, and to every log record via `ScrubFilter` before it is written to stderr or `logs/agent.log`. Redacts structural patterns with placeholder tags:
 
 | Pattern | Example | Tag |
 |---------|---------|-----|
@@ -177,6 +191,10 @@ This system is intended for **public financial research only**. Two layers prote
 | Email address | `user@bank.com` | `[EMAIL]` |
 | US phone number | `(800) 555-1234` | `[PHONE]` |
 | Labeled account number | `account # 123456789` | `[ACCOUNT_NUM]` |
+| API key in URL | `api_key=abc123` | `api_key=[API_KEY]` |
+| HTTP auth header | `Authorization: Bearer sk-...` | `Authorization: Bearer [API_KEY]` |
+
+The last two patterns prevent API keys from appearing in logs even when a network exception embeds the full request URL (the primary real-world leak vector).
 
 A `WARNING` log line is emitted whenever redaction occurs, providing an audit trail without storing the sensitive value.
 
@@ -231,7 +249,7 @@ These three tools cover the main question types: definitional/historical (Wikipe
 ## Limitations & What I'd Do With More Time
 
 **Current limitations:**
-- No persistent memory across sessions (each run starts fresh)
+- No cross-session persistence — history and cache are in-memory only; a process restart starts fresh
 - Wikipedia summaries sometimes truncate exactly where the most relevant detail appears
 - FRED tool resolves series by keyword matching — more nuanced NLP-based matching would improve data retrieval accuracy
 - No streaming output (answer appears all at once after all tool calls complete)
@@ -241,9 +259,8 @@ These three tools cover the main question types: definitional/historical (Wikipe
 1. Add a **semantic search layer** (embeddings on tool results) to avoid feeding irrelevant content to the LLM
 2. Implement **streaming output** so the user sees progress in real time
 3. Build a **web UI** with trace visualization (the JSON traces are already structured for this)
-4. Add **caching** for common queries to reduce latency and API usage
-5. Expand the **eval harness** with LLM-based answer grading (not just keyword matching)
-6. Add **more tools**: SEC EDGAR for company filings, SSRN for finance working papers, BIS for international banking data
+4. Expand the **eval harness** with LLM-based answer grading (not just keyword matching)
+5. Add **more tools**: SEC EDGAR for company filings, SSRN for finance working papers, BIS for international banking data
 
 ## Prompt Log
 
