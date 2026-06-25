@@ -1,0 +1,185 @@
+{
+  "description": "Research Agent Benchmark — 15 questions spanning factual, multi-source, data, out-of-scope, and edge cases",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the Federal Reserve's discount window and how does it work?",
+      "type": "factual_single_source",
+      "expected_tools": ["wikipedia_search"],
+      "criteria": {
+        "required_terms": ["Federal Reserve", "discount window", "interest rate", "bank", "borrow"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 2,
+      "question": "What are the Basel III capital requirements for banks?",
+      "type": "factual_single_source",
+      "expected_tools": ["wikipedia_search"],
+      "criteria": {
+        "required_terms": ["Basel III", "capital", "Tier 1", "ratio", "bank"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 3,
+      "question": "What recent academic research exists on using machine learning for credit risk assessment?",
+      "type": "academic_search",
+      "expected_tools": ["arxiv_search"],
+      "criteria": {
+        "required_terms": ["machine learning", "credit risk", "model"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 4,
+      "question": "How did the Federal Reserve's monetary policy response to the 2008 financial crisis differ from its response to COVID-19?",
+      "type": "multi_source_synthesis",
+      "expected_tools": ["wikipedia_search", "arxiv_search"],
+      "criteria": {
+        "required_terms": ["2008", "COVID", "Federal Reserve", "monetary policy"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 5,
+      "question": "What is the current US unemployment rate and how has it changed over the past year?",
+      "type": "data_retrieval",
+      "expected_tools": ["fred_search"],
+      "criteria": {
+        "required_terms": ["unemployment", "percent"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 6,
+      "question": "Explain the relationship between yield curve inversions and recessions. Are there recent academic papers on this topic?",
+      "type": "cross_tool_synthesis",
+      "expected_tools": ["wikipedia_search", "arxiv_search"],
+      "criteria": {
+        "required_terms": ["yield curve", "inversion", "recession"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 7,
+      "question": "What is the best restaurant in New York City?",
+      "type": "out_of_scope",
+      "expected_tools": [],
+      "criteria": {
+        "required_terms": [],
+        "forbidden_terms": [],
+        "should_refuse": true,
+        "must_cite": false
+      }
+    },
+    {
+      "id": 8,
+      "question": "What are the implications of quantum computing for banking encryption?",
+      "type": "speculative_emerging",
+      "expected_tools": ["wikipedia_search", "arxiv_search"],
+      "criteria": {
+        "required_terms": ["quantum", "encryption", "banking"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 9,
+      "question": "What is the history and purpose of the FDIC?",
+      "type": "factual_single_source",
+      "expected_tools": ["wikipedia_search"],
+      "criteria": {
+        "required_terms": ["FDIC", "deposit insurance", "bank"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 10,
+      "question": "What is the current US federal funds rate?",
+      "type": "data_retrieval",
+      "expected_tools": ["fred_search"],
+      "criteria": {
+        "required_terms": ["federal funds rate", "percent"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 11,
+      "question": "What are the latest machine learning approaches for detecting financial fraud?",
+      "type": "academic_search",
+      "expected_tools": ["arxiv_search"],
+      "criteria": {
+        "required_terms": ["fraud", "detection", "machine learning"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 12,
+      "question": "Who won the Super Bowl last year?",
+      "type": "out_of_scope",
+      "expected_tools": [],
+      "criteria": {
+        "required_terms": [],
+        "forbidden_terms": [],
+        "should_refuse": true,
+        "must_cite": false
+      }
+    },
+    {
+      "id": 13,
+      "question": "What is quantitative easing and what are its effects on inflation?",
+      "type": "multi_source_synthesis",
+      "expected_tools": ["wikipedia_search", "arxiv_search"],
+      "criteria": {
+        "required_terms": ["quantitative easing", "inflation", "central bank"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 14,
+      "question": "Explain what a credit default swap is and its role in the 2008 financial crisis.",
+      "type": "factual_single_source",
+      "expected_tools": ["wikipedia_search"],
+      "criteria": {
+        "required_terms": ["credit default swap", "2008", "financial crisis"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    },
+    {
+      "id": 15,
+      "question": "What does the latest economic data say about US GDP growth?",
+      "type": "data_retrieval",
+      "expected_tools": ["fred_search", "wikipedia_search"],
+      "criteria": {
+        "required_terms": ["GDP", "growth"],
+        "forbidden_terms": [],
+        "should_refuse": false,
+        "must_cite": true
+      }
+    }
+  ]
+}

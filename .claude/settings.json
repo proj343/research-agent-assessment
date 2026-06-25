@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); PROMPT=$(echo \"$INPUT\" | jq -r '.prompt // empty'); printf \"\\n---\\n## User (%s)\\n\\n%s\\n\" \"$(date '+%Y-%m-%d %H:%M:%S')\" \"$PROMPT\" >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf \"\\n---\\n## Assistant turn ended (%s)\\n\" \"$(date '+%Y-%m-%d %H:%M:%S')\" >> /Users/julia/Documents/research_agent_framework_assessment/prompt-log.md 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
