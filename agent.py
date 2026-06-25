@@ -10,7 +10,9 @@ Usage:
 
 import argparse
 import logging
+import logging.handlers
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -21,14 +23,32 @@ from agent.tools.fred import FREDTool
 from agent.tools.wikipedia import WikipediaTool
 from agent.tracer import Tracer
 
+LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+LOG_DATE_FMT = "%H:%M:%S"
+LOG_DIR = Path("logs")
+LOG_FILE = LOG_DIR / "agent.log"
+
 
 def setup_logging(verbose: bool) -> None:
-    level = logging.DEBUG if verbose else logging.WARNING
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
+    LOG_DIR.mkdir(exist_ok=True)
+
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    # stderr — WARNING normally, DEBUG with --verbose
+    stream = logging.StreamHandler()
+    stream.setLevel(logging.DEBUG if verbose else logging.WARNING)
+    stream.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FMT))
+
+    # file — always DEBUG, rotates at 5 MB, keeps 3 backups
+    file_handler = logging.handlers.RotatingFileHandler(
+        LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
     )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FMT))
+
+    root.addHandler(stream)
+    root.addHandler(file_handler)
 
 
 def print_response(response, verbose: bool) -> None:
