@@ -96,7 +96,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "LLM_MODEL"
-        value = "llama-3.3-70b-versatile"
+        value = "llama-3.1-8b-instant"
       }
 
       env {

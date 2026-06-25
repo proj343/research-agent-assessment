@@ -35,7 +35,15 @@
       "Bash(python *)",
       "Bash(brew install *)",
       "Bash(make secrets *)",
-      "Bash(make deploy *)"
+      "Bash(make deploy *)",
+      "Bash(gcloud services enable *)",
+      "Bash(gcloud artifacts repositories create *)",
+      "Bash(terraform import *)",
+      "Bash(terraform apply *)",
+      "Bash(curl -s https://research-agent-7z4fwyt2dq-uc.a.run.app/health)",
+      "Bash(curl -s -X POST https://research-agent-7z4fwyt2dq-uc.a.run.app/ask -H 'Content-Type: application/json' -d '{\"question\": \"What is the Federal Reserve discount rate?\"}')",
+      "Bash(curl -v -X POST https://research-agent-7z4fwyt2dq-uc.a.run.app/ask -H 'Content-Type: application/json' -d '{\"question\": \"What is the Federal Reserve discount rate?\"}')",
+      "Bash(gcloud run services logs *)"
     ]
   }
 }

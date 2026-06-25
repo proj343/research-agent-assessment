@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 
 from agent.core import ResearchAgent
 from agent.llm import create_llm
+from agent.pii import ScrubFilter
 from agent.tools.arxiv import ArxivTool
 from agent.tools.fred import FREDTool
 from agent.tools.wikipedia import WikipediaTool
@@ -46,6 +47,10 @@ def setup_logging(verbose: bool) -> None:
     )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FMT))
+
+    scrub_filter = ScrubFilter()
+    stream.addFilter(scrub_filter)
+    file_handler.addFilter(scrub_filter)
 
     root.addHandler(stream)
     root.addHandler(file_handler)

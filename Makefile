@@ -9,7 +9,7 @@ test:
 	uv run pytest -n auto
 
 build:
-	docker build -t $(IMAGE):latest .
+	docker build --platform linux/amd64 -t $(IMAGE):latest .
 
 push: build
 	gcloud auth configure-docker $(REGION)-docker.pkg.dev --quiet

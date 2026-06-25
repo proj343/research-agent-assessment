@@ -2,7 +2,7 @@
 
 import logging
 
-from agent.pii import scrub
+from agent.pii import ScrubFilter, scrub
 
 
 class TestScrubSSN:
@@ -78,6 +78,37 @@ class TestScrubMultiple:
         assert scrub(text) == text
 
 
+class TestScrubApiKey:
+    def test_redacts_api_key_query_param(self):
+        url = "https://api.stlouisfed.org/fred/series?series_id=UNRATE&api_key=realkey123&file_type=json"
+        result = scrub(url)
+        assert "realkey123" not in result
+        assert "api_key=[API_KEY]" in result
+
+    def test_api_key_redaction_case_insensitive(self):
+        result = scrub("request failed: API_KEY=MySecret123")
+        assert "MySecret123" not in result
+
+    def test_api_key_stops_at_ampersand(self):
+        url = "https://example.com?api_key=secret&other=value"
+        result = scrub(url)
+        assert "other=value" in result
+
+    def test_redacts_authorization_bearer(self):
+        header = "Authorization: Bearer sk-abc123xyz"
+        result = scrub(header)
+        assert "sk-abc123xyz" not in result
+        assert "Authorization: Bearer [API_KEY]" in result
+
+    def test_authorization_redaction_case_insensitive(self):
+        result = scrub("authorization: bearer MyToken999")
+        assert "MyToken999" not in result
+
+    def test_clean_url_without_api_key_unchanged(self):
+        url = "https://en.wikipedia.org/wiki/Federal_Reserve"
+        assert scrub(url) == url
+
+
 class TestScrubLogging:
     def test_logs_warning_when_pii_found(self, caplog):
         with caplog.at_level(logging.WARNING, logger="agent.pii"):
@@ -88,3 +119,54 @@ class TestScrubLogging:
         with caplog.at_level(logging.WARNING, logger="agent.pii"):
             scrub("What is the GDP of the United States?")
         assert caplog.text == ""
+
+
+class TestScrubFilter:
+    def _make_record(self, msg: str, *args) -> logging.LogRecord:
+        record = logging.LogRecord(
+            name="test",
+            level=logging.WARNING,
+            pathname="",
+            lineno=0,
+            msg=msg,
+            args=args,
+            exc_info=None,
+        )
+        return record
+
+    def test_filter_always_returns_true(self):
+        f = ScrubFilter()
+        record = self._make_record("clean message")
+        assert f.filter(record) is True
+
+    def test_filter_scrubs_pii_from_message(self):
+        f = ScrubFilter()
+        record = self._make_record("user SSN is 123-45-6789")
+        f.filter(record)
+        assert "123-45-6789" not in record.msg
+        assert "[SSN]" in record.msg
+
+    def test_filter_scrubs_api_key_from_message(self):
+        f = ScrubFilter()
+        record = self._make_record("request failed: https://api.example.com?api_key=secret99&x=1")
+        f.filter(record)
+        assert "secret99" not in record.msg
+        assert "api_key=[API_KEY]" in record.msg
+
+    def test_filter_formats_args_before_scrubbing(self):
+        f = ScrubFilter()
+        record = self._make_record("url: %s", "https://api.example.com?api_key=tok123")
+        f.filter(record)
+        assert "tok123" not in record.msg
+        assert record.args is None
+
+    def test_filter_leaves_clean_message_unchanged(self):
+        f = ScrubFilter()
+        record = self._make_record("step 1 completed in 120ms")
+        f.filter(record)
+        assert record.msg == "step 1 completed in 120ms"
+
+    def test_filter_survives_malformed_format_string(self):
+        f = ScrubFilter()
+        record = self._make_record("bad format %s %s", "only_one_arg")
+        assert f.filter(record) is True  # must not raise

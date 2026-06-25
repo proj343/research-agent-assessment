@@ -19,11 +19,15 @@ _REDACTIONS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"(?<!\d)(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}(?!\d)"), "[PHONE]"),
     # Bank account numbers when explicitly labeled  e.g. "account # 123456789"
     (re.compile(r"\b(?:account|acct)[\s#:]+\d{6,17}\b", re.IGNORECASE), "[ACCOUNT_NUM]"),
+    # API keys in URL query params  e.g. api_key=abc123 or api_key=abc123&next=...
+    (re.compile(r"(?i)\bapi_key=[^&\s\"']+"), "api_key=[API_KEY]"),
+    # HTTP Authorization headers  e.g. Authorization: Bearer sk-abc123
+    (re.compile(r"(?i)\bAuthorization:\s*Bearer\s+\S+"), "Authorization: Bearer [API_KEY]"),
 ]
 
 
 def scrub(text: str) -> str:
-    """Replace recognized PII patterns with redaction tags; logs a warning when any are found."""
+    """Replace recognized PII and credential patterns with redaction tags."""
     result = text
     found: list[str] = []
     for pattern, tag in _REDACTIONS:
@@ -34,3 +38,17 @@ def scrub(text: str) -> str:
     if found:
         logger.warning("PII redacted from input (%s)", ", ".join(found))
     return result
+
+
+class ScrubFilter(logging.Filter):
+    """Logging filter that scrubs PII and API keys from every log record."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            msg = record.getMessage()
+            cleaned = scrub(msg)
+            record.msg = cleaned
+            record.args = None
+        except Exception:
+            pass
+        return True
