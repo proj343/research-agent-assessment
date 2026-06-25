@@ -17,7 +17,8 @@
       "Bash(git add *)",
       "Bash(git rm *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(LLM_MODEL=meta-llama/llama-4-scout-17b-16e-instruct python3 *)"
     ]
   }
 }

@@ -86,6 +86,7 @@ def run_benchmark(
     output_file: str | None = None,
     ids: list[int] | None = None,
     verbose: bool = False,
+    model: str | None = None,
 ) -> tuple[list[dict], float]:
     questions_path = questions_file or Path(__file__).parent / "questions.json"
     with open(questions_path) as f:
@@ -95,7 +96,7 @@ def run_benchmark(
     if ids:
         questions = [q for q in questions if q["id"] in ids]
 
-    llm = create_llm()
+    llm = create_llm(model=model)
     tools = [WikipediaTool(), ArxivTool(), FREDTool()]
     tracer = Tracer("traces/eval")
     agent = ResearchAgent(tools=tools, llm=llm, tracer=tracer)
@@ -191,6 +192,7 @@ def main():
     parser.add_argument("--questions", default=None, help="Path to questions JSON")
     parser.add_argument("--output", default=None, help="Path for results JSON")
     parser.add_argument("--ids", default=None, help="Comma-separated question IDs to run")
+    parser.add_argument("--model", default=None, help="Override LLM model (e.g. meta-llama/llama-4-scout-17b-16e-instruct)")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -200,6 +202,7 @@ def main():
         output_file=args.output,
         ids=ids,
         verbose=args.verbose,
+        model=args.model,
     )
 
 

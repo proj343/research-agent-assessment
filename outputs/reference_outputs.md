@@ -26,16 +26,15 @@ The Federal Reserve's discount window is an instrument of monetary policy that a
 
 **Type**: Single-source factual  
 **Tools used**: wikipedia_search, arxiv_search  
-**Steps**: 5 | **Time**: 26.9s
+**Steps**: 2 | **Time**: 2.2s (llama-3.1-8b-instant)
 
 ### Answer
 
-Basel III capital requirements for banks include a leverage ratio and risk-based capital requirements, which are designed to ensure that banks have sufficient capital to absorb losses and maintain financial stability [arXiv: 2603.14557v1, arXiv: 1211.5517v1, arXiv: 2303.11414v1, arXiv: 1602.03505v1]. The specific requirements include a minimum common equity tier 1 (CET1) ratio of 4.5%, a tier 1 capital ratio of 6%, and a total capital ratio of 8% [inferred from general knowledge of Basel III, but not directly confirmed due to Wikipedia search limitations]. Additionally, banks are required to hold a capital conservation buffer of 2.5% and a countercyclical buffer of up to 2.5% [inferred from general knowledge of Basel III, but not directly confirmed due to Wikipedia search limitations]. These requirements are intended to reduce the risk of bank failures and promote financial stability, but may also have pro-cyclical side effects and impact banks' behavior and the overall financial system [arXiv: 1602.03505v1].
+The Basel III capital requirements are a set of rules established by the Basel Committee on Banking Supervision (BCBS) to ensure the stability of the global banking system. The requirements include a common equity tier 1 (CET1) capital requirement of 4.5% of risk-weighted assets, a tier 1 capital requirement of 6%, and a total capital requirement of 10.5% [Wikipedia: Basel III]. The requirements also include a leverage ratio of 3% and a capital conservation buffer of 2.5% [Wikipedia: Basel III]. The Basel III capital requirements were fully phased in as of January 1, 2023 [Wikipedia: Basel III].
 
 ### Sources
-- [ARXIV] Tractable bank capital structure: optimal control under Basel III constraints — http://arxiv.org/abs/2603.14557v1
+- [WIKIPEDIA] Basel III — https://en.wikipedia.org/wiki/Basel_III
 - [ARXIV] CDS pricing under Basel III: capital relief and default protection — http://arxiv.org/abs/1211.5517v1
-- [ARXIV] Cost of Implementation of Basel III reforms in Bangladesh — http://arxiv.org/abs/2303.11414v1
 - [ARXIV] Basel III capital surcharges for G-SIBs fail to control systemic risk — http://arxiv.org/abs/1602.03505v1
 
 ---
