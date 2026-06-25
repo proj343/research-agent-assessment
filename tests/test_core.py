@@ -388,3 +388,210 @@ class TestNPIRefusal:
 
         tool.run.assert_called_once()
         assert response.answer == "The answer is 42."
+
+
+# ---------------------------------------------------------------------------
+# Conversation history
+# ---------------------------------------------------------------------------
+
+
+class TestConversationHistory:
+    def test_history_empty_on_init(self):
+        agent = ResearchAgent(tools=[], llm=MagicMock())
+        assert agent.history == []
+
+    def test_history_appended_after_run(self):
+        tool = _make_tool()
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="q"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("What is Basel III?")
+        assert len(agent.history) == 1
+
+    def test_history_stores_question_and_answer(self):
+        tool = _make_tool()
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="q"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("What is Basel III?")
+        q, a = agent.history[0]
+        assert q == "What is Basel III?"
+        assert a == "The answer is 42."
+
+    def test_history_grows_across_runs(self):
+        tool = _make_tool()
+        agent = ResearchAgent(tools=[tool], llm=MagicMock())
+        for i in range(3):
+            agent.llm.complete.side_effect = [
+                ACTION_TMPL.format(tool="mock_tool", query=f"q{i}"),
+                FINAL,
+            ]
+            agent.run(f"Question {i}")
+        assert len(agent.history) == 3
+
+    def test_history_context_injected_into_messages(self):
+        tool = _make_tool()
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="q1"),
+            FINAL,
+            ACTION_TMPL.format(tool="mock_tool", query="q2"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("First question")
+        agent.run("Follow-up question")
+
+        # The second call's first message should include prior history
+        second_call_messages = llm.complete.call_args_list[2][0][0]
+        user_message = second_call_messages[1]["content"]
+        assert "First question" in user_message
+        assert "The answer is 42." in user_message
+
+    def test_history_capped_at_max_history(self):
+        tool = _make_tool()
+        agent = ResearchAgent(tools=[tool], llm=MagicMock(), max_history=2)
+        for i in range(5):
+            agent.llm.complete.side_effect = [
+                ACTION_TMPL.format(tool="mock_tool", query=f"q{i}"),
+                FINAL,
+            ]
+            agent.run(f"Question {i}")
+
+        # Internal history list grows unbounded; only last max_history are passed as context
+        assert len(agent.history) == 5
+        agent.llm.complete.side_effect = [FINAL]
+        agent.run("Sixth question")
+        last_call_messages = agent.llm.complete.call_args_list[-1][0][0]
+        user_content = last_call_messages[1]["content"]
+        # Only last 2 prior turns appear in context
+        assert user_content.count("Q: Question") == 2
+
+    def test_clear_history_resets_to_empty(self):
+        tool = _make_tool()
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="q"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("A question")
+        agent.clear_history()
+        assert agent.history == []
+
+    def test_after_clear_history_no_context_injected(self):
+        tool = _make_tool()
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="q1"),
+            FINAL,
+            ACTION_TMPL.format(tool="mock_tool", query="q2"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("First question")
+        agent.clear_history()
+        agent.run("Fresh start")
+
+        second_call_messages = llm.complete.call_args_list[2][0][0]
+        user_content = second_call_messages[1]["content"]
+        assert "First question" not in user_content
+        assert "Previous questions" not in user_content
+
+    def test_custom_max_history_respected(self):
+        agent = ResearchAgent(tools=[], llm=MagicMock(), max_history=1)
+        assert agent.max_history == 1
+
+
+# ---------------------------------------------------------------------------
+# Tool result cache
+# ---------------------------------------------------------------------------
+
+
+class TestToolResultCache:
+    def test_cache_empty_on_init(self):
+        agent = ResearchAgent(tools=[], llm=MagicMock())
+        assert agent._tool_cache == {}
+
+    def test_successful_result_is_cached(self):
+        tool = _make_tool()
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="gdp"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("test")
+        assert "mock_tool::gdp" in agent._tool_cache
+
+    def test_cache_hit_skips_tool_call(self):
+        tool = _make_tool()
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="gdp"),
+            FINAL,
+            ACTION_TMPL.format(tool="mock_tool", query="gdp"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("First question about GDP")
+        tool.run.reset_mock()
+        agent.run("Second question about GDP")
+
+        # Same query on same tool — tool.run must not be called again
+        tool.run.assert_not_called()
+
+    def test_cached_sources_included_in_response(self):
+        sources = [{"title": "Cached", "url": "http://cached.test", "type": "test"}]
+        tool = _make_tool(sources=sources)
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="gdp"),
+            FINAL,
+            ACTION_TMPL.format(tool="mock_tool", query="gdp"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("First")
+        response2 = agent.run("Second")
+        assert response2.sources == sources
+
+    def test_failed_result_not_cached(self):
+        tool = _make_tool(success=False)
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="bad query"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("test")
+        assert "mock_tool::bad query" not in agent._tool_cache
+
+    def test_exception_result_not_cached(self):
+        tool = _make_tool()
+        tool.run.side_effect = ConnectionError("timeout")
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="q"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("test")
+        assert agent._tool_cache == {}
+
+    def test_cache_key_is_per_tool(self):
+        tool1 = _make_tool("tool1", content="result1")
+        tool2 = _make_tool("tool2", content="result2")
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="tool1", query="same query"),
+            ACTION_TMPL.format(tool="tool2", query="same query"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool1, tool2], llm=llm)
+        agent.run("test")
+        assert "tool1::same query" in agent._tool_cache
+        assert "tool2::same query" in agent._tool_cache
+
+    def test_clear_cache_empties_dict(self):
+        tool = _make_tool()
+        llm = _make_llm(ACTION_TMPL.format(tool="mock_tool", query="q"), FINAL)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("test")
+        agent.clear_cache()
+        assert agent._tool_cache == {}
+
+    def test_after_clear_cache_tool_called_again(self):
+        tool = _make_tool()
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="gdp"),
+            FINAL,
+            ACTION_TMPL.format(tool="mock_tool", query="gdp"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+        agent.run("First")
+        agent.clear_cache()
+        tool.run.reset_mock()
+        agent.run("Second")
+        tool.run.assert_called_once()

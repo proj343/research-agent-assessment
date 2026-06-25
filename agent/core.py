@@ -88,10 +88,27 @@ class ResearchAgent:
 
     MAX_STEPS = 8
 
-    def __init__(self, tools: list[BaseTool], llm, tracer: Tracer | None = None):
+    def __init__(
+        self,
+        tools: list[BaseTool],
+        llm,
+        tracer: Tracer | None = None,
+        max_history: int = 3,
+    ):
         self.tools = {t.name: t for t in tools}
         self.llm = llm
         self.tracer = tracer
+        self.max_history = max_history
+        self.history: list[tuple[str, str]] = []
+        self._tool_cache: dict[str, ToolResult] = {}
+
+    def clear_history(self) -> None:
+        """Reset conversation history (start a new session)."""
+        self.history = []
+
+    def clear_cache(self) -> None:
+        """Clear the in-session tool result cache."""
+        self._tool_cache = {}
 
     def run(self, question: str) -> AgentResponse:
         """Execute the ReAct loop for a question and return the final answer with sources."""
@@ -110,12 +127,18 @@ class ResearchAgent:
             max_steps=self.MAX_STEPS,
         )
 
+        history_context = ""
+        if self.history:
+            recent = self.history[-self.max_history :]
+            pairs = "\n\n".join(f"Q: {q}\nA: {a}" for q, a in recent)
+            history_context = f"Previous questions in this session:\n{pairs}\n\n---\n\n"
+
         messages = [
             {"role": "system", "content": system},
             {
                 "role": "user",
                 "content": (
-                    f"Question: {question}\n\n"
+                    f"{history_context}Question: {question}\n\n"
                     "Start by writing a Thought and then an Action to search for relevant information. "
                     "Do NOT write a Final Answer yet — you must retrieve information from at least one tool first."
                 ),
@@ -155,15 +178,20 @@ class ResearchAgent:
                     if tool:
                         if step.action not in tools_used:
                             tools_used.append(step.action)
-                        try:
-                            result: ToolResult = tool.run(step.action_input)
-                        except Exception as exc:
-                            result = ToolResult(
-                                content=f"{step.action} failed after retries: {exc}",
-                                sources=[],
-                                success=False,
-                                error=str(exc),
-                            )
+                        if dedup_key in self._tool_cache:
+                            result = self._tool_cache[dedup_key]
+                        else:
+                            try:
+                                result = tool.run(step.action_input)
+                            except Exception as exc:
+                                result = ToolResult(
+                                    content=f"{step.action} failed after retries: {exc}",
+                                    sources=[],
+                                    success=False,
+                                    error=str(exc),
+                                )
+                            if result.success:
+                                self._tool_cache[dedup_key] = result
                         observation = result.content
                         if result.success:
                             all_sources.extend(result.sources)
@@ -224,6 +252,8 @@ class ResearchAgent:
             tools_used=tools_used,
             success=True,
         )
+
+        self.history.append((question, final_answer))
 
         if self.tracer:
             try:
