@@ -47,6 +47,7 @@ class FREDTool(BaseTool):
         self.api_key = key if key and key != "your_fred_api_key_here" else ""
 
     def run(self, query: str) -> ToolResult:
+        """Resolve ``query`` to a FRED series ID and return recent observations."""
         if not self.api_key:
             return ToolResult(
                 content=(
@@ -70,6 +71,7 @@ class FREDTool(BaseTool):
         return self._fetch_series(series_id)
 
     def _resolve_series(self, query: str) -> str | None:
+        """Map a natural-language query to a FRED series ID via keyword lookup then API search."""
         query_lower = query.lower()
         for keyword, sid in KNOWN_SERIES.items():
             if keyword in query_lower:
@@ -96,81 +98,73 @@ class FREDTool(BaseTool):
 
     @with_retry(max_attempts=3)
     def _fetch_series(self, series_id: str) -> ToolResult:
-        try:
-            info_resp = requests.get(
-                f"{BASE_URL}/series",
-                params={"series_id": series_id, "api_key": self.api_key, "file_type": "json"},
-                timeout=TIMEOUT,
-            )
-            series_info = (
-                info_resp.json().get("seriess", [{}])[0] if info_resp.status_code == 200 else {}
-            )
-            series_name = series_info.get("title", series_id)
-            units = series_info.get("units_short", "")
-            frequency = series_info.get("frequency_short", "")
+        """Fetch metadata and the 13 most recent observations for ``series_id``."""
+        info_resp = requests.get(
+            f"{BASE_URL}/series",
+            params={"series_id": series_id, "api_key": self.api_key, "file_type": "json"},
+            timeout=TIMEOUT,
+        )
+        series_info = (
+            info_resp.json().get("seriess", [{}])[0] if info_resp.status_code == 200 else {}
+        )
+        series_name = series_info.get("title", series_id)
+        units = series_info.get("units_short", "")
+        frequency = series_info.get("frequency_short", "")
 
-            obs_resp = requests.get(
-                f"{BASE_URL}/series/observations",
-                params={
-                    "series_id": series_id,
-                    "api_key": self.api_key,
-                    "file_type": "json",
-                    "sort_order": "desc",
-                    "limit": 24,
-                },
-                timeout=TIMEOUT,
-            )
-            obs_resp.raise_for_status()
-            observations = [
-                o for o in obs_resp.json().get("observations", []) if o["value"] != "."
-            ][:13]
+        obs_resp = requests.get(
+            f"{BASE_URL}/series/observations",
+            params={
+                "series_id": series_id,
+                "api_key": self.api_key,
+                "file_type": "json",
+                "sort_order": "desc",
+                "limit": 24,
+            },
+            timeout=TIMEOUT,
+        )
+        obs_resp.raise_for_status()
+        observations = [o for o in obs_resp.json().get("observations", []) if o["value"] != "."][
+            :13
+        ]
 
-            if not observations:
-                return ToolResult(
-                    content=f"No data available for series {series_id}.",
-                    sources=[],
-                    success=False,
-                )
-
-            latest = observations[0]
-            year_ago = observations[11] if len(observations) >= 12 else None
-
-            rows = ["| Date | Value |", "|------|-------|"]
-            for obs in observations:
-                rows.append(f"| {obs['date']} | {obs['value']} {units} |")
-
-            change_note = ""
-            if year_ago:
-                try:
-                    delta = float(latest["value"]) - float(year_ago["value"])
-                    pct = (delta / float(year_ago["value"])) * 100
-                    change_note = f"\n**Change over past year**: {delta:+.2f} {units} ({pct:+.1f}%)"
-                except ValueError:
-                    pass
-
-            content = (
-                f"## {series_name} ({series_id})\n\n"
-                f"**Latest**: {latest['value']} {units} as of {latest['date']}  \n"
-                f"**Frequency**: {frequency}{change_note}\n\n"
-                f"### Recent Observations\n" + "\n".join(rows)
-            )
-
+        if not observations:
             return ToolResult(
-                content=content,
-                sources=[
-                    {
-                        "title": f"{series_name} ({series_id})",
-                        "url": f"https://fred.stlouisfed.org/series/{series_id}",
-                        "type": "fred",
-                    }
-                ],
-                success=True,
-            )
-
-        except Exception as e:
-            return ToolResult(
-                content=f"FRED data retrieval failed: {e}",
+                content=f"No data available for series {series_id}.",
                 sources=[],
                 success=False,
-                error=str(e),
             )
+
+        latest = observations[0]
+        year_ago = observations[11] if len(observations) >= 12 else None
+
+        rows = ["| Date | Value |", "|------|-------|"]
+        for obs in observations:
+            rows.append(f"| {obs['date']} | {obs['value']} {units} |")
+
+        change_note = ""
+        if year_ago:
+            try:
+                delta = float(latest["value"]) - float(year_ago["value"])
+                pct = (delta / float(year_ago["value"])) * 100
+                change_note = f"\n**Change over past year**: {delta:+.2f} {units} ({pct:+.1f}%)"
+            except ValueError:
+                pass
+
+        content = (
+            f"## {series_name} ({series_id})\n\n"
+            f"**Latest**: {latest['value']} {units} as of {latest['date']}  \n"
+            f"**Frequency**: {frequency}{change_note}\n\n"
+            f"### Recent Observations\n" + "\n".join(rows)
+        )
+
+        return ToolResult(
+            content=content,
+            sources=[
+                {
+                    "title": f"{series_name} ({series_id})",
+                    "url": f"https://fred.stlouisfed.org/series/{series_id}",
+                    "type": "fred",
+                }
+            ],
+            success=True,
+        )

@@ -257,7 +257,7 @@ class TestWeightedScore:
 
 
 class TestQuestionsSchema:
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def questions(self):
         path = Path(__file__).parent.parent / "eval" / "questions.json"
         with open(path) as f:

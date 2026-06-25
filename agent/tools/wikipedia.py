@@ -18,52 +18,45 @@ class WikipediaTool(BaseTool):
 
     @with_retry(max_attempts=3)
     def run(self, query: str) -> ToolResult:
-        try:
-            results = self._search(query)
-            if not results:
-                return ToolResult(
-                    content=f"No Wikipedia articles found for: {query}",
-                    sources=[],
-                    success=False,
-                )
-
-            content_parts = []
-            sources = []
-
-            for title in results[:2]:
-                summary = self._get_summary(title)
-                if summary:
-                    content_parts.append(summary["text"])
-                    sources.append(
-                        {
-                            "title": title,
-                            "url": summary["url"],
-                            "type": "wikipedia",
-                        }
-                    )
-
-            if not content_parts:
-                return ToolResult(
-                    content="Found articles but could not retrieve content.",
-                    sources=[],
-                    success=False,
-                )
-
+        """Search Wikipedia and return summaries for the top matching articles."""
+        results = self._search(query)
+        if not results:
             return ToolResult(
-                content="\n\n".join(content_parts),
-                sources=sources,
-                success=True,
-            )
-
-        except Exception as e:
-            return ToolResult(
-                content=f"Wikipedia search failed: {e}",
+                content=f"No Wikipedia articles found for: {query}",
                 sources=[],
                 success=False,
-                error=str(e),
             )
 
+        content_parts = []
+        sources = []
+
+        for title in results[:2]:
+            summary = self._get_summary(title)
+            if summary:
+                content_parts.append(summary["text"])
+                sources.append(
+                    {
+                        "title": title,
+                        "url": summary["url"],
+                        "type": "wikipedia",
+                    }
+                )
+
+        if not content_parts:
+            return ToolResult(
+                content="Found articles but could not retrieve content.",
+                sources=[],
+                success=False,
+            )
+
+        return ToolResult(
+            content="\n\n".join(content_parts),
+            sources=sources,
+            success=True,
+        )
+
     def _search(self, query: str) -> list[str]:
+        """Return up to 3 Wikipedia article titles matching ``query``."""
         resp = requests.get(
             "https://en.wikipedia.org/w/api.php",
             params={
@@ -80,6 +73,7 @@ class WikipediaTool(BaseTool):
         return [r["title"] for r in resp.json().get("query", {}).get("search", [])]
 
     def _get_summary(self, title: str) -> dict | None:
+        """Fetch the REST summary for a Wikipedia article; returns ``None`` on failure."""
         encoded = title.replace(" ", "_")
         resp = requests.get(
             f"https://en.wikipedia.org/api/rest_v1/page/summary/{encoded}",

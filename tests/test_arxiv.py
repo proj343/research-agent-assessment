@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from agent.tools.arxiv import ArxivTool
 
 ATOM_NS_URI = "http://www.w3.org/2005/Atom"
@@ -155,13 +157,11 @@ class TestArxivToolRun:
 
         assert result.sources[0]["published"] == "2023-11-20"
 
-    def test_network_error_returns_failure(self):
-        with patch("agent.tools.arxiv.requests.get") as mock_get:
+    def test_network_error_propagates_after_retries(self):
+        with patch("agent.tools.arxiv.requests.get") as mock_get, patch("time.sleep"):
             mock_get.side_effect = ConnectionError("Network unreachable")
-            result = self.tool.run("test")
-
-        assert result.success is False
-        assert result.error != ""
+            with pytest.raises(ConnectionError):
+                self.tool.run("test")
 
     def test_multiple_papers_separated_by_divider(self):
         entries = [

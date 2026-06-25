@@ -20,72 +20,64 @@ class ArxivTool(BaseTool):
 
     @with_retry(max_attempts=3)
     def run(self, query: str) -> ToolResult:
-        try:
-            resp = requests.get(
-                "http://export.arxiv.org/api/query",
-                params={
-                    "search_query": f"all:{query}",
-                    "start": 0,
-                    "max_results": 5,
-                    "sortBy": "relevance",
-                    "sortOrder": "descending",
-                },
-                timeout=TIMEOUT,
-            )
-            resp.raise_for_status()
+        """Search arXiv and return formatted abstracts for the top matching papers."""
+        resp = requests.get(
+            "http://export.arxiv.org/api/query",
+            params={
+                "search_query": f"all:{query}",
+                "start": 0,
+                "max_results": 5,
+                "sortBy": "relevance",
+                "sortOrder": "descending",
+            },
+            timeout=TIMEOUT,
+        )
+        resp.raise_for_status()
 
-            root = ET.fromstring(resp.content)
-            entries = root.findall("atom:entry", ATOM_NS)
+        root = ET.fromstring(resp.content)
+        entries = root.findall("atom:entry", ATOM_NS)
 
-            if not entries:
-                return ToolResult(
-                    content=f"No arXiv papers found for: {query}",
-                    sources=[],
-                    success=False,
-                )
-
-            content_parts = []
-            sources = []
-
-            for entry in entries[:4]:
-                title = entry.find("atom:title", ATOM_NS).text.strip().replace("\n", " ")
-                summary = entry.find("atom:summary", ATOM_NS).text.strip()[:800]
-                paper_url = entry.find("atom:id", ATOM_NS).text.strip()
-                published = entry.find("atom:published", ATOM_NS).text[:10]
-                authors = [
-                    a.find("atom:name", ATOM_NS).text for a in entry.findall("atom:author", ATOM_NS)
-                ]
-                author_str = ", ".join(authors[:4])
-                if len(authors) > 4:
-                    author_str += " et al."
-
-                content_parts.append(
-                    f"### {title}\n"
-                    f"**Authors**: {author_str}  \n"
-                    f"**Published**: {published}  \n"
-                    f"**URL**: {paper_url}\n\n"
-                    f"{summary}"
-                )
-                sources.append(
-                    {
-                        "title": title,
-                        "authors": authors,
-                        "url": paper_url,
-                        "published": published,
-                        "type": "arxiv",
-                    }
-                )
-
+        if not entries:
             return ToolResult(
-                content="\n\n---\n\n".join(content_parts),
-                sources=sources,
-                success=True,
-            )
-
-        except Exception as e:
-            return ToolResult(
-                content=f"arXiv search failed: {e}",
+                content=f"No arXiv papers found for: {query}",
                 sources=[],
                 success=False,
-                error=str(e),
             )
+
+        content_parts = []
+        sources = []
+
+        for entry in entries[:4]:
+            title = entry.find("atom:title", ATOM_NS).text.strip().replace("\n", " ")
+            summary = entry.find("atom:summary", ATOM_NS).text.strip()[:800]
+            paper_url = entry.find("atom:id", ATOM_NS).text.strip()
+            published = entry.find("atom:published", ATOM_NS).text[:10]
+            authors = [
+                a.find("atom:name", ATOM_NS).text for a in entry.findall("atom:author", ATOM_NS)
+            ]
+            author_str = ", ".join(authors[:4])
+            if len(authors) > 4:
+                author_str += " et al."
+
+            content_parts.append(
+                f"### {title}\n"
+                f"**Authors**: {author_str}  \n"
+                f"**Published**: {published}  \n"
+                f"**URL**: {paper_url}\n\n"
+                f"{summary}"
+            )
+            sources.append(
+                {
+                    "title": title,
+                    "authors": authors,
+                    "url": paper_url,
+                    "published": published,
+                    "type": "arxiv",
+                }
+            )
+
+        return ToolResult(
+            content="\n\n---\n\n".join(content_parts),
+            sources=sources,
+            success=True,
+        )

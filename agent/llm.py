@@ -8,11 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class BaseLLM(ABC):
+    """Common interface for all LLM backends."""
+
     @abstractmethod
     def complete(
         self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096
     ) -> str:
-        pass
+        """Send an OpenAI-style message list and return the assistant reply as a string."""
 
 
 class GroqLLM(BaseLLM):

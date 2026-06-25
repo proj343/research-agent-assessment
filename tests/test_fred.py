@@ -281,16 +281,14 @@ class TestFREDFetchSeries:
         ]
         assert len(data_rows) <= 13
 
-    def test_network_failure_returns_failure_result(self):
-        with patch("agent.tools.fred.requests.get") as mock_get:
+    def test_network_failure_propagates_after_retries(self):
+        with patch("agent.tools.fred.requests.get") as mock_get, patch("time.sleep"):
             mock_get.side_effect = [
                 _mock_response(SERIES_INFO_RESP),
                 ConnectionError("timeout"),
-            ]
-            result = self.tool._fetch_series("UNRATE")
-
-        assert result.success is False
-        assert result.error != ""
+            ] * 3  # three attempts, each hits the same error
+            with pytest.raises(ConnectionError):
+                self.tool._fetch_series("UNRATE")
 
     def test_non_numeric_observation_values_skip_year_over_year(self):
         """Covers fred.py lines 148-149 — ValueError in float() silently skipped."""

@@ -92,6 +92,7 @@ agent.py                 # CLI entry point
 agent/
   core.py                # ReAct agent loop — orchestrates LLM + tools
   llm.py                 # LLM abstraction (Groq / Ollama)
+  pii.py                 # PII scrubbing — redacts sensitive patterns before LLM/traces
   tracer.py              # Structured JSON tracing
   tools/
     base.py              # BaseTool interface + retry decorator
@@ -162,6 +163,26 @@ Every run produces a structured JSON trace in `traces/`:
 ```
 
 A reviewer can open any trace file and understand exactly why the agent made each decision.
+
+### Privacy & Compliance
+
+This system is intended for **public financial research only**. Two layers protect against sensitive data leakage:
+
+**PII scrubbing** (`agent/pii.py`) — applied to every question before it reaches the LLM or is written to trace files. Redacts structural patterns with placeholder tags:
+
+| Pattern | Example | Tag |
+|---------|---------|-----|
+| Social Security Number | `123-45-6789` | `[SSN]` |
+| Credit/debit card | `4111 1111 1111 1111` | `[CARD_NUM]` |
+| Email address | `user@bank.com` | `[EMAIL]` |
+| US phone number | `(800) 555-1234` | `[PHONE]` |
+| Labeled account number | `account # 123456789` | `[ACCOUNT_NUM]` |
+
+A `WARNING` log line is emitted whenever redaction occurs, providing an audit trail without storing the sensitive value.
+
+**NPI system prompt guard** — the agent's system prompt instructs it to refuse any question that appears to contain nonpublic personal information (NPI) under Gramm-Leach-Bliley: named individuals paired with account balances, transaction history, credit scores, or loan details. The refusal fires before any tool call, so NPI never reaches the search tools or traces.
+
+> **Note:** NPI detection is contextual and cannot be fully automated. These guardrails are a safety net — access controls and a clear usage policy (no customer data in queries) are the primary line of defense.
 
 ### Reliability (Tier 3)
 

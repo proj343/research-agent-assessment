@@ -32,6 +32,7 @@ def setup_logging(verbose: bool) -> None:
 
 
 def print_response(response, verbose: bool) -> None:
+    """Pretty-print an ``AgentResponse`` to stdout; includes step trace when ``verbose=True``."""
     sep = "=" * 70
 
     print(f"\n{sep}")

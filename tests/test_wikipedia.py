@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from agent.tools.wikipedia import WikipediaTool
 
 SEARCH_RESPONSE = {
@@ -157,13 +159,11 @@ class TestWikipediaToolRun:
         # Only 2 summary fetches (for A and B), not 3
         assert mock_get.call_count == 3  # 1 search + 2 summaries
 
-    def test_network_exception_caught_and_returned_as_failure(self):
-        with patch("agent.tools.wikipedia.requests.get") as mock_get:
+    def test_network_exception_propagates_after_retries(self):
+        with patch("agent.tools.wikipedia.requests.get") as mock_get, patch("time.sleep"):
             mock_get.side_effect = ConnectionError("Connection refused")
-            result = self.tool.run("anything")
-
-        assert result.success is False
-        assert result.error != ""
+            with pytest.raises(ConnectionError):
+                self.tool.run("anything")
 
     def test_content_includes_article_title_as_heading(self):
         with patch("agent.tools.wikipedia.requests.get") as mock_get:

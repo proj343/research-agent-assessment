@@ -28,6 +28,7 @@ from agent.tracer import Tracer
 
 
 def score_response(answer: str, tools_used: list[str], criteria: dict) -> dict:
+    """Score an agent answer against benchmark criteria; returns a dict with ``score`` (0–1) and sub-scores."""
     answer_lower = answer.lower()
 
     # Required term coverage
@@ -93,6 +94,7 @@ def run_benchmark(
     verbose: bool = False,
     model: str | None = None,
 ) -> tuple[list[dict], float]:
+    """Run the full benchmark suite and return ``(results, avg_score)``; writes a JSON report to ``output_file``."""
     load_dotenv()
     questions_path = questions_file or Path(__file__).parent / "questions.json"
     with open(questions_path) as f:

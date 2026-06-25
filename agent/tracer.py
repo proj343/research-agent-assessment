@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class Tracer:
+    """Writes one JSON file per agent run for offline analysis and debugging."""
+
     def __init__(self, traces_dir: str = "traces"):
         self.traces_dir = Path(traces_dir)
         self.traces_dir.mkdir(parents=True, exist_ok=True)
@@ -36,7 +38,8 @@ class Tracer:
                     "action": s.action,
                     "action_input": s.action_input,
                     "observation_length": len(s.observation),
-                    "observation_preview": s.observation[:600] + ("..." if len(s.observation) > 600 else ""),
+                    "observation_preview": s.observation[:600]
+                    + ("..." if len(s.observation) > 600 else ""),
                     "duration_ms": round(s.duration_ms),
                 }
                 for s in response.steps

@@ -349,3 +349,42 @@ class TestAgentDedupe:
         result = self.agent._dedupe(sources)
         assert len(result) == 1
         assert result[0]["title"] == "Title A"
+
+
+# ---------------------------------------------------------------------------
+# NPI refusal — system prompt guard
+# ---------------------------------------------------------------------------
+
+
+class TestNPIRefusal:
+    def test_npi_question_triggers_refusal(self):
+        """LLM should refuse when question contains customer-specific financial data."""
+        tool = _make_tool()
+        npi_refusal = (
+            "Thought: This question appears to contain nonpublic customer information (NPI).\n"
+            "Final Answer: I cannot process this request. It appears to contain nonpublic personal "
+            "information (NPI) such as individual customer financial data."
+        )
+        llm = _make_llm(npi_refusal)
+        agent = ResearchAgent(tools=[tool], llm=llm)
+
+        response = agent.run(
+            "Customer Jane Doe has a balance of $45,230 and credit score 680 — should we extend credit?"
+        )
+
+        assert "cannot process" in response.answer.lower() or "npi" in response.answer.lower()
+        tool.run.assert_not_called()
+
+    def test_general_finance_question_not_refused(self):
+        """Legitimate research questions must not be blocked by the NPI guard."""
+        tool = _make_tool()
+        llm = _make_llm(
+            ACTION_TMPL.format(tool="mock_tool", query="credit scoring models"),
+            FINAL,
+        )
+        agent = ResearchAgent(tools=[tool], llm=llm)
+
+        response = agent.run("How do banks evaluate creditworthiness?")
+
+        tool.run.assert_called_once()
+        assert response.answer == "The answer is 42."

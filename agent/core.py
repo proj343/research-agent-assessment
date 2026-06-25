@@ -5,6 +5,7 @@ import re
 import time
 from dataclasses import dataclass, field
 
+from .pii import scrub
 from .tools.base import BaseTool, ToolResult
 from .tracer import Tracer
 
@@ -42,11 +43,25 @@ Rules:
 - Always cite specific sources with titles/IDs, not just "according to Wikipedia"
 - Be honest about uncertainty and gaps in your retrieved information
 - NEVER answer from memory alone for in-scope questions — always retrieve and cite sources
+
+NPI policy:
+- This system is for PUBLIC research only. Do NOT process questions that appear to contain \
+nonpublic personal information (NPI) about specific customers — e.g. named individuals paired \
+with account balances, transaction histories, credit scores, or loan details.
+- If a question contains what looks like customer-specific financial data, respond immediately with:
+  Thought: This question appears to contain nonpublic customer information (NPI), which this \
+system is not authorized to process.
+  Final Answer: I cannot process this request. It appears to contain nonpublic personal \
+information (NPI) such as individual customer financial data. This system is authorized for \
+public financial research only. Please remove any customer-specific data and rephrase as a \
+general research question.
 """
 
 
 @dataclass
 class AgentStep:
+    """One iteration of the Thought → Action → Observation loop."""
+
     step_num: int
     thought: str = ""
     action: str = ""
@@ -57,6 +72,8 @@ class AgentStep:
 
 @dataclass
 class AgentResponse:
+    """Final output of a single agent run, including all intermediate steps."""
+
     question: str
     answer: str
     sources: list = field(default_factory=list)
@@ -67,6 +84,8 @@ class AgentResponse:
 
 
 class ResearchAgent:
+    """ReAct-style agent that iterates Thought/Action/Observation until it can answer."""
+
     MAX_STEPS = 8
 
     def __init__(self, tools: list[BaseTool], llm, tracer: Tracer | None = None):
@@ -75,6 +94,8 @@ class ResearchAgent:
         self.tracer = tracer
 
     def run(self, question: str) -> AgentResponse:
+        """Execute the ReAct loop for a question and return the final answer with sources."""
+        question = scrub(question)
         start = time.time()
         steps: list[AgentStep] = []
         all_sources: list[dict] = []
@@ -134,7 +155,15 @@ class ResearchAgent:
                     if tool:
                         if step.action not in tools_used:
                             tools_used.append(step.action)
-                        result: ToolResult = tool.run(step.action_input)
+                        try:
+                            result: ToolResult = tool.run(step.action_input)
+                        except Exception as exc:
+                            result = ToolResult(
+                                content=f"{step.action} failed after retries: {exc}",
+                                sources=[],
+                                success=False,
+                                error=str(exc),
+                            )
                         observation = result.content
                         if result.success:
                             all_sources.extend(result.sources)
@@ -209,6 +238,7 @@ class ResearchAgent:
     # ------------------------------------------------------------------
 
     def _parse(self, text: str) -> dict:
+        """Parse LLM output into a typed dict with keys ``type``, ``thought``, and either ``answer`` or ``tool``/``query``."""
         # Final Answer takes priority
         final_m = re.search(r"Final Answer\s*:\s*(.+)", text, re.DOTALL | re.IGNORECASE)
         if final_m:
