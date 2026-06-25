@@ -25,7 +25,8 @@
       "Bash(uv run *)",
       "Bash(git commit *)",
       "Bash(python -m pytest tests/test_scoring.py::TestToolScore::test_no_tools_on_out_of_scope_does_not_penalize tests/test_e2e.py::TestMultiToolIntegration::test_both_wikipedia_and_arxiv_called_in_sequence -v)",
-      "Bash(chmod +x *)"
+      "Bash(chmod +x *)",
+      "Bash(git *)"
     ]
   }
 }
