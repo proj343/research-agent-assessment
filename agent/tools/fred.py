@@ -20,7 +20,7 @@ KNOWN_SERIES = {
     "consumer price": "CPIAUCSL",
     "federal funds rate": "FEDFUNDS",
     "fed funds": "FEDFUNDS",
-    "discount rate": "MDISCRATE",
+    "discount rate": "DPCREDIT",
     "10-year treasury": "DGS10",
     "10 year treasury": "DGS10",
     "2-year treasury": "DGS2",

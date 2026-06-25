@@ -82,6 +82,10 @@ resource "google_cloud_run_v2_service" "api" {
   template {
     service_account = google_service_account.run_sa.email
 
+    scaling {
+      min_instance_count = 1
+    }
+
     containers {
       image = local.image
 
@@ -96,7 +100,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "LLM_MODEL"
-        value = "llama-3.1-8b-instant"
+        value = "meta-llama/llama-4-scout-17b-16e-instruct"
       }
 
       env {

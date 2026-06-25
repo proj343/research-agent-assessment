@@ -2,6 +2,8 @@
 
 import logging
 import os
+import re
+import time
 from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
@@ -20,7 +22,9 @@ class BaseLLM(ABC):
 class GroqLLM(BaseLLM):
     """Groq cloud inference — free tier, fast. Get key at console.groq.com."""
 
-    def __init__(self, model: str = "llama-3.3-70b-versatile", api_key: str | None = None):
+    def __init__(
+        self, model: str = "meta-llama/llama-4-scout-17b-16e-instruct", api_key: str | None = None
+    ):
         try:
             from groq import Groq
         except ImportError:
@@ -32,13 +36,24 @@ class GroqLLM(BaseLLM):
     def complete(
         self, messages: list[dict], temperature: float = 0.1, max_tokens: int = 4096
     ) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        return response.choices[0].message.content
+        for attempt in range(3):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                is_rate_limit = "429" in str(e) or "rate_limit" in str(e).lower()
+                if is_rate_limit and attempt < 2:
+                    match = re.search(r"try again in (\d+\.?\d*)s", str(e))
+                    wait = min(float(match.group(1)) if match else 30.0, 60.0)
+                    logger.warning(f"Groq rate limit hit, retrying in {wait:.1f}s")
+                    time.sleep(wait)
+                    continue
+                raise
 
 
 class OllamaLLM(BaseLLM):

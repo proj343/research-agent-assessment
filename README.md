@@ -9,9 +9,16 @@ A multi-tool research agent for banking and finance questions. Given a natural l
 ```bash
 git clone https://github.com/proj343/research-agent-assessment
 cd research-agent-assessment
-pip install -r requirements.txt
+
+# Option A: using uv (recommended)
+uv sync
 cp .env.example .env
 # Edit .env and set GROQ_API_KEY (free at https://console.groq.com)
+uv run python agent.py "What is the Federal Reserve's discount window?"
+
+# Option B: using pip
+pip install -r requirements.txt
+cp .env.example .env
 python3 agent.py "What is the Federal Reserve's discount window?"
 ```
 
@@ -19,7 +26,7 @@ python3 agent.py "What is the Federal Reserve's discount window?"
 
 **Python**: 3.11+
 
-**Dependencies** (`pip install -r requirements.txt`):
+**Dependencies** (install via `uv sync` or `pip install -r requirements.txt`):
 - `groq` — Groq cloud LLM client
 - `requests` — HTTP for tool APIs
 - `python-dotenv` — `.env` file loading
@@ -89,6 +96,7 @@ Question → [Thought → Action → Observation] × N → Final Answer
 
 ```
 agent.py                 # CLI entry point
+api.py                   # FastAPI web UI + REST API
 agent/
   core.py                # ReAct agent loop — orchestrates LLM + tools
   llm.py                 # LLM abstraction (Groq / Ollama)
@@ -103,8 +111,14 @@ agent/
 eval/
   benchmark.py           # Evaluation harness
   questions.json         # 15 benchmark questions with scoring criteria
+tests/                   # Unit, integration, and e2e tests (314 tests)
 logs/                    # Rotating log file (agent.log, up to 5 MB × 3 backups)
 traces/                  # Auto-generated per-run JSON traces
+outputs/                 # Reference question outputs (all 8 questions)
+Dockerfile               # Container image for Cloud Run
+terraform/               # GCP infrastructure (Cloud Run, Artifact Registry, Secrets)
+Makefile                 # test, build, deploy targets
+.github/workflows/       # CI (lint + test) / CD (build + deploy)
 ```
 
 ### Tool Interface
@@ -139,13 +153,21 @@ Adding a new tool is a 3-step plug-in operation:
 The agent maintains state across steps within a single run:
 - **Deduplication**: tracks `(tool, query)` pairs; skips redundant calls within a run (the cache extends this across runs)
 - **Context accumulation**: each observation is fed back into the conversation, so the LLM reasons over all prior findings when deciding the next action
-- **Max steps**: configurable ceiling (default: 8) with forced synthesis if reached
+- **Max steps**: configurable ceiling (default: 5) with forced synthesis if reached
 
-**Example of multi-step improving over single-pass**:
+**Multi-step vs single-pass comparison** (Tier 2 requirement — two questions showing the difference):
 
-Question 4 (Fed response 2008 vs COVID-19): A single Wikipedia search for "Federal Reserve 2008 crisis" returns the 2008 side well, but misses the COVID response. The agent recognizes this gap in its reasoning step and performs a second search for "Federal Reserve COVID-19 monetary policy", then synthesizes both. Single-pass would produce a one-sided answer.
+**Question 4 — Fed response 2008 vs COVID-19** (multi-source synthesis):
 
-Question 6 (yield curve inversions + academic papers): The agent first searches Wikipedia for the conceptual explanation, then issues a targeted arXiv search for recent papers — two tools, two steps, complementary results.
+*Single-pass (1 tool call):* Searching "Federal Reserve 2008 COVID monetary policy" returns a Wikipedia article focused on the 2008 crisis. The answer would cover quantitative easing and TALF for 2008 but say little about COVID-specific programs (Main Street Lending, unlimited QE, municipal lending facilities). Result: one-sided, incomplete comparison.
+
+*Multi-step (3 tool calls — actual output):* Step 1: Wikipedia → "Federal Reserve 2008 crisis" (gets 2008 detail). Step 2: arXiv → "COVID-19 monetary policy" (finds papers comparing the two responses). Step 3: FRED → federal funds rate data (adds quantitative context). Final answer covers both periods with specific programs, cites 3 arXiv papers plus FRED data. See `outputs/reference_outputs.md` Q4 for the full output — 4 sources, 6 steps, 52.3s.
+
+**Question 6 — Yield curve inversions + academic papers** (cross-tool synthesis):
+
+*Single-pass (1 tool call):* Searching Wikipedia for "yield curve inversion recession" returns a conceptual overview. The "are there recent academic papers?" part of the question goes unanswered entirely — Wikipedia has no arXiv paper listings.
+
+*Multi-step (4 tool calls — actual output):* Step 1: Wikipedia → "yield curve inversion" (conceptual definition). Step 2: arXiv → "yield curve recession prediction" (finds 4 papers on forecasting methods). Step 3: FRED → T10Y2Y spread data (current yield curve state). Final answer explains the concept, cites 4 recent papers with IDs, and includes current FRED data. See `outputs/reference_outputs.md` Q6 — 5 sources from 3 tools, 4 steps, 26.8s.
 
 ### Observability (Tier 2)
 
@@ -239,6 +261,52 @@ python3 eval/benchmark.py --ids 1,2,3,7
 - **Refusal accuracy** (25%): for out-of-scope questions, does the agent appropriately decline?
 - **Tool usage** (10%): did the agent use at least one tool for in-scope questions?
 
+### Web UI & API
+
+A FastAPI web interface is included for interactive use:
+
+```bash
+# Local
+uvicorn api:app --reload
+# Then open http://localhost:8000
+```
+
+The web UI provides a clean research interface with example questions, source cards, and timing metadata. The `/ask` endpoint accepts JSON `{"question": "..."}` and returns the answer with sources. Rate-limited to 20 requests/hour per IP via `slowapi`.
+
+### Deployment (GCP Cloud Run)
+
+The project includes production deployment infrastructure:
+
+- **`Dockerfile`** — slim Python 3.11 image with `uv` for dependency management
+- **`terraform/main.tf`** — Cloud Run service, Artifact Registry, Secret Manager (for API keys), service account with least-privilege IAM
+- **`Makefile`** — `make test`, `make build`, `make deploy` (push image → terraform apply)
+- **`.github/workflows/ci.yml`** — CI (lint + format + test on every push/PR) and CD (build → push → deploy to Cloud Run on main)
+
+```bash
+make test          # Run tests in parallel
+make deploy        # Build Docker image, push to Artifact Registry, terraform apply
+```
+
+## Agent Performance Summary
+
+**Benchmark** (15 questions, `eval/benchmark.py`): **0.914 / 1.000** average score.
+
+| Question type | Avg score | n |
+|--------------|-----------|---|
+| Factual (single source) | 0.900 | 4 |
+| Academic search | 0.900 | 2 |
+| Multi-source synthesis | 0.867 | 2 |
+| Data retrieval (FRED) | 0.800 | 3 |
+| Cross-tool synthesis | 1.000 | 1 |
+| Out-of-scope refusal | 1.000 | 2 |
+| Speculative / emerging | 0.900 | 1 |
+
+**Strengths**: Cross-tool synthesis and out-of-scope refusal are perfect. The agent reliably combines Wikipedia + arXiv + FRED for complex questions and correctly refuses non-finance queries without calling tools.
+
+**Weaknesses**: Data retrieval scores lowest (0.800) because FRED keyword-to-series matching is brittle — "GDP growth" and "federal funds rate" resolve well, but more nuanced economic queries sometimes pick the wrong series. arXiv search relevance is inconsistent — broad queries like "credit risk machine learning" sometimes surface tangentially related papers.
+
+Full benchmark results: [`traces/benchmark_results.json`](traces/benchmark_results.json)
+
 ## Reference Question Outputs
 
 See [`outputs/reference_outputs.md`](outputs/reference_outputs.md) for full agent outputs on all 8 reference questions.
@@ -254,7 +322,7 @@ Plan-and-execute generates a full tool-calling plan upfront before executing. Re
 **Why Wikipedia + arXiv + FRED?**
 These three tools cover the main question types: definitional/historical (Wikipedia), recent research (arXiv), and current quantitative data (FRED). Wikipedia has no rate limits, arXiv is open-access, and FRED's free key provides access to the world's largest public economic dataset.
 
-**Context window management**: Tool outputs are truncated at 6,000 characters per observation to stay within Groq's context limits while preserving the most relevant content.
+**Context window management**: Tool outputs are truncated at 3,000 characters per observation to stay within Groq's context limits while preserving the most relevant content.
 
 ## Limitations & What I'd Do With More Time
 
@@ -268,9 +336,10 @@ These three tools cover the main question types: definitional/historical (Wikipe
 **With more time I would:**
 1. Add a **semantic search layer** (embeddings on tool results) to avoid feeding irrelevant content to the LLM
 2. Implement **streaming output** so the user sees progress in real time
-3. Build a **web UI** with trace visualization (the JSON traces are already structured for this)
+3. Add **trace visualization** to the web UI (the JSON traces are already structured for this)
 4. Expand the **eval harness** with LLM-based answer grading (not just keyword matching)
 5. Add **more tools**: SEC EDGAR for company filings, SSRN for finance working papers, BIS for international banking data
+6. Implement a proper **circuit breaker** (open/half-open/closed states) for external API calls
 
 ## Prompt Log
 

@@ -87,7 +87,7 @@ class AgentResponse:
 class ResearchAgent:
     """ReAct-style agent that iterates Thought/Action/Observation until it can answer."""
 
-    MAX_STEPS = 8
+    MAX_STEPS = 5
 
     def __init__(
         self,
@@ -154,7 +154,7 @@ class ResearchAgent:
 
         for step_num in range(1, self.MAX_STEPS + 1):
             step_start = time.time()
-            response_text = self.llm.complete(messages, temperature=0.1, max_tokens=2048)
+            response_text = self.llm.complete(messages, temperature=0.1, max_tokens=1024)
             logger.debug(f"Step {step_num} LLM output:\n{response_text[:500]}")
 
             parsed = self._parse(response_text)
@@ -244,7 +244,7 @@ class ResearchAgent:
                     "content": "You've reached the step limit. Provide your Final Answer now based on everything gathered.",
                 }
             )
-            response_text = self.llm.complete(messages, temperature=0.1, max_tokens=2048)
+            response_text = self.llm.complete(messages, temperature=0.1, max_tokens=1024)
             parsed = self._parse(response_text)
             final_answer = parsed.get("answer") or response_text
 

@@ -83,7 +83,7 @@ class TestWithRetry:
         assert mock_sleep.call_args_list[0] == call(1.0)
         assert mock_sleep.call_args_list[1] == call(2.0)
 
-    def test_429_triggers_ten_second_wait(self):
+    def test_429_triggers_three_second_wait(self):
         @with_retry(max_attempts=3)
         def fn():
             raise Exception("429 Too Many Requests")
@@ -92,9 +92,9 @@ class TestWithRetry:
             with pytest.raises(Exception):
                 fn()
         for c in mock_sleep.call_args_list:
-            assert c == call(10.0)
+            assert c == call(3.0)
 
-    def test_too_many_requests_string_triggers_ten_second_wait(self):
+    def test_too_many_requests_string_triggers_three_second_wait(self):
         @with_retry(max_attempts=2)
         def fn():
             raise Exception("Too Many Requests from server")
@@ -102,7 +102,7 @@ class TestWithRetry:
         with patch("agent.tools.base.time.sleep") as mock_sleep:
             with pytest.raises(Exception):
                 fn()
-        assert mock_sleep.call_args_list[0] == call(10.0)
+        assert mock_sleep.call_args_list[0] == call(3.0)
 
     def test_no_sleep_on_last_attempt(self):
         """Sleep is only called between attempts, never after the final failure."""
