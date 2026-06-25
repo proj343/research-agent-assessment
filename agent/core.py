@@ -5,6 +5,7 @@ import re
 import time
 from dataclasses import dataclass, field
 
+from .guardrails import GuardrailError, validate
 from .pii import scrub
 from .tools.base import BaseTool, ToolResult
 from .tracer import Tracer
@@ -113,6 +114,10 @@ class ResearchAgent:
     def run(self, question: str) -> AgentResponse:
         """Execute the ReAct loop for a question and return the final answer with sources."""
         question = scrub(question)
+        try:
+            validate(question)
+        except GuardrailError as e:
+            return AgentResponse(question=question, answer=str(e), success=False)
         start = time.time()
         steps: list[AgentStep] = []
         all_sources: list[dict] = []
