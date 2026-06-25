@@ -55,6 +55,9 @@ def score_response(answer: str, tools_used: list[str], criteria: dict) -> dict:
         "not about finance",
         "outside my scope",
         "not a research question",
+        "not within my",
+        "falls outside",
+        "beyond the scope",
     ]
     did_refuse = any(m in answer_lower for m in refusal_markers)
     if should_refuse:

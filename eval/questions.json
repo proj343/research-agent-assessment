@@ -55,7 +55,7 @@
       "type": "data_retrieval",
       "expected_tools": ["fred_search"],
       "criteria": {
-        "required_terms": ["unemployment", "percent"],
+        "required_terms": ["unemployment", "%"],
         "forbidden_terms": [],
         "should_refuse": false,
         "must_cite": true
@@ -115,7 +115,7 @@
       "type": "data_retrieval",
       "expected_tools": ["fred_search"],
       "criteria": {
-        "required_terms": ["federal funds rate", "percent"],
+        "required_terms": ["federal funds rate", "%"],
         "forbidden_terms": [],
         "should_refuse": false,
         "must_cite": true

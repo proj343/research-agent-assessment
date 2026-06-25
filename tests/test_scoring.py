@@ -129,6 +129,9 @@ class TestRefusalScore:
             "not about finance",
             "outside my scope",
             "not a research question",
+            "not within my",
+            "falls outside",
+            "beyond the scope",
         ],
     )
     def test_each_refusal_marker_detected(self, marker):
@@ -140,6 +143,15 @@ class TestRefusalScore:
             "This is outside my scope as a finance assistant.",
             criteria={"should_refuse": True},
         )
+        assert result["refusal_correct"] is True
+
+    def test_not_within_my_scope_phrase_detected(self):
+        """Regression: 'not within my primary scope' was missed before adding 'not within my'."""
+        result = _score(
+            "This question is not within my primary scope of providing finance information.",
+            criteria={"should_refuse": True},
+        )
+        assert result["did_refuse"] is True
         assert result["refusal_correct"] is True
 
     def test_missing_refusal_scores_zero(self):
