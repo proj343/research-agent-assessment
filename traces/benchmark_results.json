@@ -1,0 +1,142 @@
+{
+  "run_at": "2026-06-25T16:16:51.625155",
+  "avg_score": 0.0,
+  "num_questions": 15,
+  "results": [
+    {
+      "id": 1,
+      "question": "What is the Federal Reserve's discount window and how does it work?",
+      "type": "factual_single_source",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97739, Requested 2631. Please try again in 5m19.68s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 2,
+      "question": "What are the Basel III capital requirements for banks?",
+      "type": "factual_single_source",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2627. Please try again in 5m15.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 3,
+      "question": "What recent academic research exists on using machine learning for credit risk assessment?",
+      "type": "academic_search",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2631. Please try again in 5m18.816s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 4,
+      "question": "How did the Federal Reserve's monetary policy response to the 2008 financial crisis differ from its response to COVID-19?",
+      "type": "multi_source_synthesis",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2642. Please try again in 5m28.32s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 5,
+      "question": "What is the current US unemployment rate and how has it changed over the past year?",
+      "type": "data_retrieval",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2634. Please try again in 5m21.408s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 6,
+      "question": "Explain the relationship between yield curve inversions and recessions. Are there recent academic papers on this topic?",
+      "type": "cross_tool_synthesis",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2638. Please try again in 5m24.864s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 7,
+      "question": "What is the best restaurant in New York City?",
+      "type": "out_of_scope",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2627. Please try again in 5m15.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 8,
+      "question": "What are the implications of quantum computing for banking encryption?",
+      "type": "speculative_emerging",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97738, Requested 2628. Please try again in 5m16.224s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 9,
+      "question": "What is the history and purpose of the FDIC?",
+      "type": "factual_single_source",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2628. Please try again in 5m15.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 10,
+      "question": "What is the current US federal funds rate?",
+      "type": "data_retrieval",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2626. Please try again in 5m13.632s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 11,
+      "question": "What are the latest machine learning approaches for detecting financial fraud?",
+      "type": "academic_search",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2629. Please try again in 5m16.224s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 12,
+      "question": "Who won the Super Bowl last year?",
+      "type": "out_of_scope",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2625. Please try again in 5m12.768s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 13,
+      "question": "What is quantitative easing and what are its effects on inflation?",
+      "type": "multi_source_synthesis",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2629. Please try again in 5m16.224s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 14,
+      "question": "Explain what a credit default swap is and its role in the 2008 financial crisis.",
+      "type": "factual_single_source",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2635. Please try again in 5m21.408s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    },
+    {
+      "id": 15,
+      "question": "What does the latest economic data say about US GDP growth?",
+      "type": "data_retrieval",
+      "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kw05nk1yemwvm6d7a0j9bxsd` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 97737, Requested 2629. Please try again in 5m16.224s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "eval": {
+        "score": 0.0
+      }
+    }
+  ]
+}

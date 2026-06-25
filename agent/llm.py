@@ -64,7 +64,9 @@ def create_llm(provider: str | None = None, model: str | None = None) -> BaseLLM
     """Factory — reads LLM_PROVIDER and LLM_MODEL from env if not specified."""
     provider = provider or os.environ.get("LLM_PROVIDER", "groq")
     if provider == "groq":
-        model = model or os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile")
+        # Default: llama-4-scout — 17B Llama 4 model, fast on Groq, good reasoning
+        # For best quality, set LLM_MODEL=llama-3.3-70b-versatile (100K token/day limit)
+        model = model or os.environ.get("LLM_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
         return GroqLLM(model=model)
     if provider == "ollama":
         model = model or os.environ.get("LLM_MODEL", "llama3.2:3b")

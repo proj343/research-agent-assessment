@@ -93,7 +93,14 @@ class ResearchAgent:
 
         messages = [
             {"role": "system", "content": system},
-            {"role": "user", "content": f"Question: {question}"},
+            {
+                "role": "user",
+                "content": (
+                    f"Question: {question}\n\n"
+                    "Start by writing a Thought and then an Action to search for relevant information. "
+                    "Do NOT write a Final Answer yet — you must retrieve information from at least one tool first."
+                ),
+            },
         ]
 
         final_answer: Optional[str] = None
@@ -147,7 +154,7 @@ class ResearchAgent:
                 messages.append({
                     "role": "user",
                     "content": (
-                        f"Observation: {observation[:6000]}\n\n"
+                        f"Observation: {observation[:3000]}\n\n"
                         "Continue. If you have enough information, write your Final Answer. "
                         "Otherwise, continue with another Thought/Action/Action Input."
                     ),

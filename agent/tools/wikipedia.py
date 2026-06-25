@@ -86,6 +86,6 @@ class WikipediaTool(BaseTool):
         if resp.status_code != 200:
             return None
         data = resp.json()
-        extract = data.get("extract", "")[:4000]
+        extract = data.get("extract", "")[:2500]
         url = data.get("content_urls", {}).get("desktop", {}).get("page", f"https://en.wikipedia.org/wiki/{encoded}")
         return {"text": f"### {title}\n\n{extract}", "url": url}

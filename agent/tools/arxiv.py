@@ -47,7 +47,7 @@ class ArxivTool(BaseTool):
 
             for entry in entries[:4]:
                 title = entry.find("atom:title", ATOM_NS).text.strip().replace("\n", " ")
-                summary = entry.find("atom:summary", ATOM_NS).text.strip()[:2000]
+                summary = entry.find("atom:summary", ATOM_NS).text.strip()[:800]
                 paper_url = entry.find("atom:id", ATOM_NS).text.strip()
                 published = entry.find("atom:published", ATOM_NS).text[:10]
                 authors = [a.find("atom:name", ATOM_NS).text for a in entry.findall("atom:author", ATOM_NS)]

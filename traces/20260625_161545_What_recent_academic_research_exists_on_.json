@@ -1,0 +1,147 @@
+{
+  "question": "What recent academic research exists on using machine learning for credit risk assessment?",
+  "timestamp": "2026-06-25T16:15:45.253105",
+  "success": true,
+  "total_duration_ms": 70149,
+  "tools_used": [
+    "arxiv_search"
+  ],
+  "num_steps": 4,
+  "sources": [
+    {
+      "title": "Classification of Imbalanced Credit scoring data sets Based on Ensemble Method with the Weighted-Hybrid-Sampling",
+      "authors": [
+        "Xiaofan Liua",
+        "Zuoquan Zhanga",
+        "Di Wanga"
+      ],
+      "url": "http://arxiv.org/abs/2102.04721v1",
+      "published": "2021-02-09",
+      "type": "arxiv"
+    },
+    {
+      "title": "The Impact of Feature Selection and Transformation on Machine Learning Methods in Determining the Credit Scoring",
+      "authors": [
+        "Oguz Koc",
+        "Omur Ugur",
+        "A. Sevtap Kestel"
+      ],
+      "url": "http://arxiv.org/abs/2303.05427v1",
+      "published": "2023-03-09",
+      "type": "arxiv"
+    },
+    {
+      "title": "Transparency, Auditability and eXplainability of Machine Learning Models in Credit Scoring",
+      "authors": [
+        "Michael B\u00fccker",
+        "Gero Szepannek",
+        "Alicja Gosiewska",
+        "Przemyslaw Biecek"
+      ],
+      "url": "http://arxiv.org/abs/2009.13384v1",
+      "published": "2020-09-28",
+      "type": "arxiv"
+    },
+    {
+      "title": "Predicting credit default probabilities using machine learning techniques in the face of unequal class distributions",
+      "authors": [
+        "Anna Stelzer"
+      ],
+      "url": "http://arxiv.org/abs/1907.12996v1",
+      "published": "2019-07-30",
+      "type": "arxiv"
+    },
+    {
+      "title": "Credit risk: Taking fluctuating asset correlations into account",
+      "authors": [
+        "Thilo A. Schmitt",
+        "Rudi Sch\u00e4fer",
+        "Thomas Guhr"
+      ],
+      "url": "http://arxiv.org/abs/1601.03015v1",
+      "published": "2016-01-12",
+      "type": "arxiv"
+    },
+    {
+      "title": "Analyzing Machine Learning Models for Credit Scoring with Explainable AI and Optimizing Investment Decisions",
+      "authors": [
+        "Swati Tyagi"
+      ],
+      "url": "http://arxiv.org/abs/2209.09362v1",
+      "published": "2022-09-19",
+      "type": "arxiv"
+    },
+    {
+      "title": "Learning credit assignment",
+      "authors": [
+        "Chan Li",
+        "Haiping Huang"
+      ],
+      "url": "http://arxiv.org/abs/2001.03354v2",
+      "published": "2020-01-10",
+      "type": "arxiv"
+    },
+    {
+      "title": "Explainable AI in Credit Risk Management",
+      "authors": [
+        "Branka Hadji Misheva",
+        "Joerg Osterrieder",
+        "Ali Hirsa",
+        "Onkar Kulkarni",
+        "Stephen Fung Lin"
+      ],
+      "url": "http://arxiv.org/abs/2103.00949v1",
+      "published": "2021-03-01",
+      "type": "arxiv"
+    },
+    {
+      "title": "SHAP Stability in Credit Risk Management: A Case Study in Credit Card Default Model",
+      "authors": [
+        "Luyun Lin",
+        "Yiqing Wang"
+      ],
+      "url": "http://arxiv.org/abs/2508.01851v1",
+      "published": "2025-08-03",
+      "type": "arxiv"
+    }
+  ],
+  "answer": "Recent academic research on using machine learning for credit risk assessment has focused on developing more accurate and efficient models, as well as addressing the challenges associated with explainability and transparency. Papers such as \"Transparency, Auditability and eXplainability of Machine Learning Models in Credit Scoring\" [1] and \"Explainable AI in Credit Risk Management\" [2] highlight the importance of making machine learning models more transparent and auditable, while papers such as \"Learning credit assignment\" [3] and \"The Impact of Feature Selection and Transformation on Machine Learning Methods in Determining the Credit Scoring\" [4] explore the potential benefits and challenges of using machine learning in credit risk assessment. Overall, the research suggests that machine learning has the potential to improve credit risk assessment, but it is essential to address the challenges associated with explainability and transparency to ensure that these models are reliable and trustworthy.\n\nReferences:\n\n[1] B\u00fccker, M., Szepannek, G., Gosiewska, A., & Biecek, P. (2020). Transparency, Auditability and eXplainability of Machine Learning Models in Credit Scoring. arXiv preprint arXiv:2009.13384.\n\n[2] Hadji Misheva, B., Osterrieder, J., Hirsa, A., Kulkarni, O., et al. (2021). Explainable AI in Credit Risk Management. arXiv preprint arXiv:2103.00949.\n\n[3] Li, C., & Huang, H. (2020). Learning credit assignment. arXiv preprint arXiv:2001.03354.\n\n[4] Koc, O., Ugur, O., & Kestel, A. S. (2023). The Impact of Feature Selection and Transformation on Machine Learning Methods in Determining the Credit Scoring. arXiv preprint arXiv:2303.05427.",
+  "steps": [
+    {
+      "step": 1,
+      "thought": "To find recent academic research on using machine learning for credit risk assessment, I should start by searching for relevant papers on arXiv, a popular platform for peer-reviewed academic papers. This will give me a list of recent research papers, their authors, and abstracts.",
+      "action": "arxiv_search",
+      "action_input": "(machine learning AND credit risk assessment) OR (credit scoring AND machine learning)",
+      "observation_length": 3954,
+      "observation_preview": "### Classification of Imbalanced Credit scoring data sets Based on Ensemble Method with the Weighted-Hybrid-Sampling\n**Authors**: Xiaofan Liua, Zuoquan Zhanga, Di Wanga  \n**Published**: 2021-02-09  \n**URL**: http://arxiv.org/abs/2102.04721v1\n\nIn the era of big data, the utilization of credit-scoring models to determine the credit risk of applicants accurately becomes a trend in the future. The conventional machine learning on credit scoring data sets tends to have poor classification for the minority class, which may bring huge commercial harm to banks. In order to classify imbalanced data set...",
+      "duration_ms": 3087
+    },
+    {
+      "step": 2,
+      "thought": "These three papers provide a good starting point for understanding recent research on using machine learning for credit risk assessment. However, I would like to explore more papers on this topic to get a broader understanding of the current state of research. I also want to see if there are any papers that discuss the limitations and challenges of using machine learning in credit risk assessment.",
+      "action": "arxiv_search",
+      "action_input": "(credit risk assessment AND machine learning) OR (credit scoring AND machine learning) OR (credit risk AND deep learning)",
+      "observation_length": 4117,
+      "observation_preview": "### Classification of Imbalanced Credit scoring data sets Based on Ensemble Method with the Weighted-Hybrid-Sampling\n**Authors**: Xiaofan Liua, Zuoquan Zhanga, Di Wanga  \n**Published**: 2021-02-09  \n**URL**: http://arxiv.org/abs/2102.04721v1\n\nIn the era of big data, the utilization of credit-scoring models to determine the credit risk of applicants accurately becomes a trend in the future. The conventional machine learning on credit scoring data sets tends to have poor classification for the minority class, which may bring huge commercial harm to banks. In order to classify imbalanced data set...",
+      "duration_ms": 1508
+    },
+    {
+      "step": 3,
+      "thought": "These additional papers provide more insights into the use of machine learning for credit risk assessment, including ensemble methods, feature selection, and the impact of asset correlations. However, I would like to explore more papers on the topic of explainability and transparency in credit risk assessment, as well as the potential risks and challenges associated with using machine learning in this area.",
+      "action": "arxiv_search",
+      "action_input": "(explainability AND credit risk assessment) OR (transparency AND credit scoring) OR (machine learning AND credit risk challenges)",
+      "observation_length": 3877,
+      "observation_preview": "### Transparency, Auditability and eXplainability of Machine Learning Models in Credit Scoring\n**Authors**: Michael B\u00fccker, Gero Szepannek, Alicja Gosiewska, Przemyslaw Biecek  \n**Published**: 2020-09-28  \n**URL**: http://arxiv.org/abs/2009.13384v1\n\nA major requirement for credit scoring models is to provide a maximally accurate risk prediction. Additionally, regulators demand these models to be transparent and auditable. Thus, in credit scoring, very simple predictive models such as logistic regression or decision trees are still widely used and the superior predictive power of modern machine...",
+      "duration_ms": 35545
+    },
+    {
+      "step": 4,
+      "thought": "These additional papers provide more insights into the importance of explainability and transparency in credit risk assessment, as well as the potential risks and challenges associated with using machine learning in this area. I have now gathered a good understanding of the current state of research on using machine learning for credit risk assessment, including the benefits, challenges, and potential risks.",
+      "action": "",
+      "action_input": "",
+      "observation_length": 0,
+      "observation_preview": "",
+      "duration_ms": 0
+    }
+  ]
+}
