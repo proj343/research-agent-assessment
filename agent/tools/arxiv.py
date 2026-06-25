@@ -10,24 +10,32 @@ ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 TIMEOUT = 20
 
 
+RECENCY_WORDS = {"recent", "latest", "new", "newest", "current", "2024", "2025", "2026"}
+
+
 class ArxivTool(BaseTool):
     name = "arxiv_search"
     description = (
         "Search arXiv for peer-reviewed academic papers. "
         "Best for questions about recent research, methodologies, machine learning, "
-        "and academic findings. Returns paper titles, authors, abstracts, and URLs."
+        "and academic findings. Returns paper titles, authors, abstracts, and URLs. "
+        "Use keyword-style queries (e.g. 'credit risk machine learning'), not full sentences."
     )
 
     @with_retry(max_attempts=3)
     def run(self, query: str) -> ToolResult:
         """Search arXiv and return formatted abstracts for the top matching papers."""
+        words = query.lower().split()
+        wants_recent = any(w in words for w in RECENCY_WORDS)
+        keywords = [w for w in query.split() if w.lower() not in RECENCY_WORDS]
+        search_query = " AND ".join(f"abs:{kw}" for kw in keywords) if keywords else f"all:{query}"
         resp = requests.get(
             "http://export.arxiv.org/api/query",
             params={
-                "search_query": f"all:{query}",
+                "search_query": search_query,
                 "start": 0,
-                "max_results": 5,
-                "sortBy": "relevance",
+                "max_results": 8,
+                "sortBy": "submittedDate" if wants_recent else "relevance",
                 "sortOrder": "descending",
             },
             timeout=TIMEOUT,

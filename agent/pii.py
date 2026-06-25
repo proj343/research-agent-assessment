@@ -26,8 +26,8 @@ _REDACTIONS: list[tuple[re.Pattern, str]] = [
 ]
 
 
-def scrub(text: str) -> str:
-    """Replace recognized PII and credential patterns with redaction tags."""
+def _scrub_silent(text: str) -> tuple[str, list[str]]:
+    """Core scrubbing logic — returns (cleaned_text, list_of_matched_tags)."""
     result = text
     found: list[str] = []
     for pattern, tag in _REDACTIONS:
@@ -35,6 +35,12 @@ def scrub(text: str) -> str:
         if cleaned != result:
             found.append(tag.strip("[]"))
             result = cleaned
+    return result, found
+
+
+def scrub(text: str) -> str:
+    """Replace recognized PII and credential patterns with redaction tags."""
+    result, found = _scrub_silent(text)
     if found:
         logger.warning("PII redacted from input (%s)", ", ".join(found))
     return result
@@ -46,7 +52,7 @@ class ScrubFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         try:
             msg = record.getMessage()
-            cleaned = scrub(msg)
+            cleaned, _ = _scrub_silent(msg)
             record.msg = cleaned
             record.args = None
         except Exception:

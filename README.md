@@ -80,7 +80,93 @@ python3 agent.py "What is quantitative easing?" --no-trace
 python3 agent.py "Your question" --provider ollama --model llama3.2:3b
 ```
 
+## Live Demo
+
+A live instance is deployed on GCP Cloud Run:
+
+```
+https://research-agent-7z4fwyt2dq-uc.a.run.app
+```
+
+**Try it:**
+```bash
+# Health check
+curl https://research-agent-7z4fwyt2dq-uc.a.run.app/health
+
+# Ask a question via API
+curl -X POST https://research-agent-7z4fwyt2dq-uc.a.run.app/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"question": "What is the Federal Reserve discount window?"}'
+
+# Or open the web UI in your browser
+open https://research-agent-7z4fwyt2dq-uc.a.run.app
+```
+
+The web UI provides a clean interface with example questions, source cards, and timing metadata. Rate-limited to 20 requests/hour per IP.
+
+> **Note:** The live demo uses Groq's free tier, which has daily token limits. If you get a 500 error, the token budget may be exhausted (resets at midnight UTC). Clone the repo and run locally for unlimited use.
+
 ## Architecture
+
+### Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        User Question                            │
+│              "How did Fed policy differ 2008 vs COVID?"          │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                    ┌──────▼──────┐
+                    │  Guardrails │ ← length cap, prompt injection
+                    │  PII Scrub  │ ← SSN, cards, emails, API keys
+                    └──────┬──────┘
+                           │
+              ┌────────────▼────────────┐
+              │    ReAct Agent Loop     │
+              │    (agent/core.py)      │
+              │                         │
+              │  ┌───────────────────┐  │
+              │  │  LLM (Groq/      │  │
+              │  │  Ollama)          │  │
+              │  └────────┬──────┘  │  │
+              │           │            │
+              │  Thought → Action      │
+              │           │            │
+              │  ┌────────▼─────────┐  │
+              │  │  Tool Dispatch   │  │
+              │  └──┬─────┬─────┬──┘  │
+              │     │     │     │      │
+              └─────┼─────┼─────┼──────┘
+                    │     │     │
+         ┌──────────┘     │     └──────────┐
+         │                │                │
+   ┌─────▼─────┐   ┌─────▼─────┐   ┌─────▼─────┐
+   │ Wikipedia  │   │   arXiv   │   │   FRED    │
+   │ REST +     │   │ Atom API  │   │ REST API  │
+   │ Action API │   │           │   │           │
+   └─────┬─────┘   └─────┬─────┘   └─────┬─────┘
+         │                │                │
+         └────────┐       │       ┌────────┘
+                  │       │       │
+              ┌───▼───────▼───────▼───┐
+              │      Observation       │
+              │   (fed back to LLM)    │
+              └───────────┬───────────┘
+                          │
+                          │ repeat until enough info
+                          │
+              ┌───────────▼───────────┐
+              │    Final Answer       │
+              │  with [citations]     │
+              └───────────┬───────────┘
+                          │
+               ┌──────────┼──────────┐
+               │          │          │
+          ┌────▼───┐ ┌────▼───┐ ┌───▼────┐
+          │ stdout │ │ JSON   │ │ logs/  │
+          │        │ │ trace  │ │agent.log│
+          └────────┘ └────────┘ └────────┘
+```
 
 ### Agent Pattern: ReAct (Reason + Act)
 

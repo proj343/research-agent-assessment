@@ -43,7 +43,15 @@
       "Bash(curl -s https://research-agent-7z4fwyt2dq-uc.a.run.app/health)",
       "Bash(curl -s -X POST https://research-agent-7z4fwyt2dq-uc.a.run.app/ask -H 'Content-Type: application/json' -d '{\"question\": \"What is the Federal Reserve discount rate?\"}')",
       "Bash(curl -v -X POST https://research-agent-7z4fwyt2dq-uc.a.run.app/ask -H 'Content-Type: application/json' -d '{\"question\": \"What is the Federal Reserve discount rate?\"}')",
-      "Bash(gcloud run services logs *)"
+      "Bash(gcloud run services logs *)",
+      "Bash(curl *)",
+      "Bash(gcloud run services update *)",
+      "Bash(grep -E '\\\\.\\(py|md|txt|yaml|json|toml\\)$')",
+      "Bash(gcloud iam workload-identity-pools create *)",
+      "Bash(gcloud iam workload-identity-pools providers *)",
+      "Bash(gcloud iam service-accounts add-iam-policy-binding *)",
+      "Bash(gcloud projects *)",
+      "Bash(gh variable *)"
     ]
   }
 }
