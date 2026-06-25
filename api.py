@@ -1,3 +1,5 @@
+import re
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -196,8 +198,10 @@ def ask(request: Request, req: QuestionRequest):
     tools = [WikipediaTool(), ArxivTool(), FREDTool()]
     agent = ResearchAgent(tools=tools, llm=llm)
     response = agent.run(req.question)
+    answer = re.sub(r"\*{1,2}(.+?)\*{1,2}", r"\1", response.answer)
+    answer = re.sub(r"#{1,3}\s+", "", answer)
     return AnswerResponse(
-        answer=response.answer,
+        answer=answer,
         sources=response.sources,
         tools_used=response.tools_used,
         steps=len(response.steps),

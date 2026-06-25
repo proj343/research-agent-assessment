@@ -31,13 +31,18 @@ When you have gathered sufficient information to answer the question, use this f
 Thought: [final reasoning — summarize what you found and note any gaps]
 Final Answer: [comprehensive answer that:
   1. Directly addresses the question
-  2. Cites sources in brackets, e.g. [Wikipedia: Article Title] or [arXiv: paper_id] or [FRED: Series Name (ID)]
-  3. Clearly distinguishes retrieved facts from your own synthesis/inference
-  4. If the question is out of scope (not about finance/economics/banking/related research),
-     explains why and what kinds of questions you CAN answer]
+  2. Cites sources inline in brackets, e.g. [Wikipedia: Article Title] or [arXiv: paper_id] or [FRED: Series Name (ID)]
+  3. Do NOT append a list of raw URLs or links at the end — the UI displays sources separately
+  4. Do NOT use markdown formatting (no **, ##, [](), etc.) — output plain text only
+  5. Clearly distinguishes retrieved facts from your own synthesis/inference
+  6. If the question is out of scope, explains what topics you CAN answer]
 
 Rules:
-- You MUST call at least one tool before giving a Final Answer on any in-scope finance/economics/research question
+- If the question is clearly OUT OF SCOPE (not about finance, economics, banking, or related research), \
+skip all tool calls and respond immediately with a Final Answer explaining what topics you cover. \
+Do NOT search Wikipedia or any tool for out-of-scope questions.
+- You MUST call at least one tool before giving a Final Answer on any IN-SCOPE question
+- Be efficient: simple factual questions need 1-2 tool calls, not 5. Stop searching once you have a clear answer.
 - Do NOT repeat a tool call with the same query
 - For multi-source questions (e.g. "explain X AND find papers on X"), use MULTIPLE tools before synthesizing
 - Maximum {max_steps} tool calls per question
@@ -45,6 +50,7 @@ Rules:
 - Be honest about uncertainty and gaps in your retrieved information
 - NEVER answer from memory alone for in-scope questions — always retrieve and cite sources
 - For arxiv_search: use short keyword queries (e.g. "credit risk machine learning"), NOT full sentences. Include "recent" to sort by date.
+- For fred_search: include the year in your query when asking about historical data (e.g. "unemployment rate 2020"). Always report the numeric values returned by the tool — do NOT substitute values from your own knowledge.
 
 NPI policy:
 - This system is for PUBLIC research only. Do NOT process questions that appear to contain \
@@ -252,7 +258,7 @@ class ResearchAgent:
         response = AgentResponse(
             question=question,
             answer=final_answer,
-            sources=self._dedupe(all_sources),
+            sources=self._filter_cited(self._dedupe(all_sources), final_answer),
             steps=steps,
             total_duration_ms=(time.time() - start) * 1000,
             tools_used=tools_used,
@@ -314,3 +320,19 @@ class ResearchAgent:
                 seen.add(key)
                 out.append(s)
         return out
+
+    def _filter_cited(self, sources: list[dict], answer: str) -> list[dict]:
+        """Keep only sources whose title, series ID, or arXiv ID appears in the answer."""
+        answer_lower = answer.lower()
+        cited = []
+        for s in sources:
+            title = s.get("title", "")
+            url = s.get("url", "")
+            sid = s.get("series_id", "")
+            if (
+                title.lower() in answer_lower
+                or sid.lower() in answer_lower
+                or (url and url.split("/")[-1] in answer)
+            ):
+                cited.append(s)
+        return cited if cited else sources[:3]

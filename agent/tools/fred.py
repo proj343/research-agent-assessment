@@ -1,10 +1,15 @@
 """FRED tool — retrieves Federal Reserve economic data series."""
 
+import logging
 import os
+import re
+from datetime import date
 
 import requests
 
 from .base import BaseTool, ToolResult, with_retry
+
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.stlouisfed.org/fred"
 TIMEOUT = 12
@@ -61,6 +66,7 @@ class FREDTool(BaseTool):
             )
 
         series_id = self._resolve_series(query)
+        logger.warning(f"FRED query={query!r} -> series={series_id}")
         if not series_id:
             return ToolResult(
                 content=f"No FRED series found for: {query}",
@@ -68,7 +74,16 @@ class FREDTool(BaseTool):
                 success=False,
             )
 
+        year = self._extract_year(query)
+        if year:
+            return self._fetch_series(series_id, obs_start=f"{year}-01-01", obs_end=f"{year}-12-31")
         return self._fetch_series(series_id)
+
+    @staticmethod
+    def _extract_year(query: str) -> str | None:
+        """Return a 4-digit year if the query references a specific historical year."""
+        m = re.search(r"\b(19[5-9]\d|20[0-2]\d)\b", query)
+        return m.group(1) if m else None
 
     def _resolve_series(self, query: str) -> str | None:
         """Map a natural-language query to a FRED series ID via keyword lookup then API search."""
@@ -97,8 +112,10 @@ class FREDTool(BaseTool):
             return None
 
     @with_retry(max_attempts=3)
-    def _fetch_series(self, series_id: str) -> ToolResult:
-        """Fetch metadata and the 13 most recent observations for ``series_id``."""
+    def _fetch_series(
+        self, series_id: str, obs_start: str | None = None, obs_end: str | None = None
+    ) -> ToolResult:
+        """Fetch metadata and observations for ``series_id``, optionally within a date range."""
         info_resp = requests.get(
             f"{BASE_URL}/series",
             params={"series_id": series_id, "api_key": self.api_key, "file_type": "json"},
@@ -111,21 +128,36 @@ class FREDTool(BaseTool):
         units = series_info.get("units_short", "")
         frequency = series_info.get("frequency_short", "")
 
+        today = date.today().isoformat()
+        obs_params = {
+            "series_id": series_id,
+            "api_key": self.api_key,
+            "file_type": "json",
+            "sort_order": "desc",
+            "limit": 24,
+            "realtime_start": today,
+            "realtime_end": today,
+        }
+        if obs_start:
+            obs_params["observation_start"] = obs_start
+        if obs_end:
+            obs_params["observation_end"] = obs_end
+
         obs_resp = requests.get(
             f"{BASE_URL}/series/observations",
-            params={
-                "series_id": series_id,
-                "api_key": self.api_key,
-                "file_type": "json",
-                "sort_order": "desc",
-                "limit": 24,
-            },
+            params=obs_params,
             timeout=TIMEOUT,
         )
         obs_resp.raise_for_status()
         observations = [o for o in obs_resp.json().get("observations", []) if o["value"] != "."][
             :13
         ]
+        logger.warning(
+            f"FRED {series_id}: latest={observations[0]['date']}={observations[0]['value']} "
+            f"(realtime={obs_params.get('realtime_start')})"
+            if observations
+            else f"FRED {series_id}: no observations"
+        )
 
         if not observations:
             return ToolResult(
@@ -146,16 +178,37 @@ class FREDTool(BaseTool):
             try:
                 delta = float(latest["value"]) - float(year_ago["value"])
                 pct = (delta / float(year_ago["value"])) * 100
-                change_note = f"\n**Change over past year**: {delta:+.2f} {units} ({pct:+.1f}%)"
+                change_note = f"\nChange over period: {delta:+.2f} {units} ({pct:+.1f}%)"
             except ValueError:
                 pass
 
-        content = (
-            f"## {series_name} ({series_id})\n\n"
-            f"**Latest**: {latest['value']} {units} as of {latest['date']}  \n"
-            f"**Frequency**: {frequency}{change_note}\n\n"
-            f"### Recent Observations\n" + "\n".join(rows)
-        )
+        avg_note = ""
+        vals = []
+        for obs in observations:
+            try:
+                vals.append(float(obs["value"]))
+            except ValueError:
+                pass
+        if len(vals) >= 2:
+            avg = sum(vals) / len(vals)
+            if obs_start and obs_end and len(vals) == 12 and frequency == "M":
+                year = obs_start[:4]
+                avg_note = f"\nOFFICIAL ANNUAL AVERAGE for {year}: {avg:.1f} {units} (computed from 12 monthly observations — use this value)"
+            else:
+                avg_note = f"\nAverage across {len(vals)} observations: {avg:.1f} {units}"
+
+        if obs_start and obs_end and len(vals) == 12 and frequency == "M":
+            headline = (
+                f"ANSWER: {series_name} annual average for {obs_start[:4]} was {avg:.1f} {units}."
+            )
+            mandate = f"You MUST use {avg:.1f} {units} as the annual average in your Final Answer."
+        else:
+            headline = f"ANSWER: {series_name} is {latest['value']} {units} as of {latest['date']}."
+            mandate = (
+                f"You MUST use {latest['value']} {units} in your Final Answer — this is live data."
+            )
+
+        content = f"{headline}\nSource: FRED series {series_id}.{change_note}{avg_note}\n{mandate}"
 
         return ToolResult(
             content=content,
@@ -163,6 +216,9 @@ class FREDTool(BaseTool):
                 {
                     "title": f"{series_name} ({series_id})",
                     "url": f"https://fred.stlouisfed.org/series/{series_id}",
+                    "series_id": series_id,
+                    "latest_value": f"{latest['value']} {units}",
+                    "latest_date": latest["date"],
                     "type": "fred",
                 }
             ],
